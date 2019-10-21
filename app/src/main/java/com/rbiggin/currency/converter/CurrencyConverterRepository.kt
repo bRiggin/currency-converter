@@ -1,7 +1,7 @@
 package com.rbiggin.currency.converter
 
 class CurrencyConverterRepository(
-    service: CurrencyConversionApi,
+    private val api: CurrencyConversionApi,
     private val mapper: CurrencyConversionMapper = CurrencyConversionMapper
 ) : CurrencyConverterDataSource {
 
@@ -15,10 +15,14 @@ class CurrencyConverterRepository(
     }
 
     init {
-        service.apply {
+        api.apply {
             setOnUpdateListener(updateListener)
             setCurrencyCode(DEFAULT_CURRENCY_CODE)
         }
+    }
+
+    override fun setCurrencyCode(code: String) {
+        api.setCurrencyCode(code)
     }
 
     private fun handleApiUpdate(update: Set<CurrencyDto>) {

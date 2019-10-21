@@ -9,7 +9,7 @@ import org.junit.Test
 
 class CurrencyConverterRepositoryTest {
 
-    private val service: CurrencyConversionApi = mockk(relaxed = true)
+    private val api: CurrencyConversionApi = mockk(relaxed = true)
     private val mapper: CurrencyConversionMapper = mockk(relaxed = true)
 
     private lateinit var repository: CurrencyConverterRepository
@@ -18,21 +18,21 @@ class CurrencyConverterRepositoryTest {
 
     @Before
     fun `configure currency converter repository`() {
-        every { service.setOnUpdateListener(captureLambda()) } answers {
+        every { api.setOnUpdateListener(captureLambda()) } answers {
             updateListener = lambda<((Set<CurrencyDto>) -> Unit)>().captured
         }
 
-        repository = CurrencyConverterRepository(service, mapper)
+        repository = CurrencyConverterRepository(api, mapper)
     }
 
     @Test
     fun `when initialised expect repository to set api with default currency`() {
-        verify { service.setCurrencyCode(CurrencyConverterRepository.DEFAULT_CURRENCY_CODE) }
+        verify { api.setCurrencyCode(CurrencyConverterRepository.DEFAULT_CURRENCY_CODE) }
     }
 
     @Test
     fun `when initialised expect repository to listen for updates from api`() {
-        verify { service.setOnUpdateListener(any()) }
+        verify { api.setOnUpdateListener(any()) }
     }
 
     @Test
@@ -120,4 +120,10 @@ class CurrencyConverterRepositoryTest {
         assertEquals(newConversionRate, repository.observable.value?.get(nativeCode)?.conversionRate)
     }
 
+    @Test
+    fun `when new currency code is provided expect api to be set with new code`() {
+        val newCurrencyCode = "JPN"
+        repository.setCurrencyCode(newCurrencyCode)
+        verify { api.setCurrencyCode(newCurrencyCode) }
+    }
 }
