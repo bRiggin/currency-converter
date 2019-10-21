@@ -2,7 +2,6 @@ package com.rbiggin.currency.converter
 
 object CurrencyConversionMapper {
 
-    fun convertDtoToEntity(dto: CurrencyDto): CurrencyEntity {
-        return CurrencyEntity("", "", 0.0)
-    }
+    fun convertDtoToEntity(dto: CurrencyDto): CurrencyEntity =
+        CurrencyEntity(dto.nativeCode, dto.foreignCode, dto.conversionRate)
 }
