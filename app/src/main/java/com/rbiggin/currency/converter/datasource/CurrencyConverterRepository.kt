@@ -1,11 +1,17 @@
-package com.rbiggin.currency.converter
+package com.rbiggin.currency.converter.datasource
+
+import com.rbiggin.currency.converter.api.CurrencyConversionApi
+import com.rbiggin.currency.converter.model.CurrencyDto
+import com.rbiggin.currency.converter.model.CurrencyEntity
+import com.rbiggin.currency.converter.TypedObservable
 
 class CurrencyConverterRepository(
     private val api: CurrencyConversionApi,
     private val mapper: CurrencyConversionMapper = CurrencyConversionMapper
 ) : CurrencyConverterDataSource {
 
-    override val observable: TypedObservable<Map<String, CurrencyEntity>> = TypedObservable()
+    override val observable: TypedObservable<Map<String, CurrencyEntity>> =
+        TypedObservable()
 
     private val currentState: Map<String, CurrencyEntity>?
         get() = observable.value
@@ -16,7 +22,7 @@ class CurrencyConverterRepository(
 
     init {
         api.apply {
-            setOnUpdateListener(updateListener)
+            setUpdateListener(updateListener)
             setCurrencyCode(DEFAULT_CURRENCY_CODE)
         }
     }
