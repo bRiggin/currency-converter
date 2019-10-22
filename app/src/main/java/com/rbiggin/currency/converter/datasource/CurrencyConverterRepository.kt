@@ -22,7 +22,7 @@ class CurrencyConverterRepository(
 
     init {
         api.apply {
-            setOnUpdateListener(updateListener)
+            setUpdateListener(updateListener)
             setCurrencyCode(DEFAULT_CURRENCY_CODE)
         }
     }

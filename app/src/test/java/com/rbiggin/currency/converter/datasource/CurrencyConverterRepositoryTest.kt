@@ -21,7 +21,7 @@ class CurrencyConverterRepositoryTest {
 
     @Before
     fun `configure currency converter repository`() {
-        every { api.setOnUpdateListener(captureLambda()) } answers {
+        every { api.setUpdateListener(captureLambda()) } answers {
             updateListener = lambda<((Set<CurrencyDto>) -> Unit)>().captured
         }
 
@@ -35,7 +35,7 @@ class CurrencyConverterRepositoryTest {
 
     @Test
     fun `when initialised expect repository to listen for updates from api`() {
-        verify { api.setOnUpdateListener(any()) }
+        verify { api.setUpdateListener(any()) }
     }
 
     @Test
