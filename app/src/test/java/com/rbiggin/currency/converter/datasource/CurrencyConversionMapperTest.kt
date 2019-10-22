@@ -1,5 +1,7 @@
-package com.rbiggin.currency.converter
+package com.rbiggin.currency.converter.datasource
 
+import com.rbiggin.currency.converter.datasource.CurrencyConversionMapper
+import com.rbiggin.currency.converter.model.CurrencyDto
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals

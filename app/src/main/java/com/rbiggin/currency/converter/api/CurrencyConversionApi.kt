@@ -1,4 +1,6 @@
-package com.rbiggin.currency.converter
+package com.rbiggin.currency.converter.api
+
+import com.rbiggin.currency.converter.model.CurrencyDto
 
 interface CurrencyConversionApi {
 

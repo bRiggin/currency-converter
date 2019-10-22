@@ -1,5 +1,8 @@
-package com.rbiggin.currency.converter
+package com.rbiggin.currency.converter.datasource
 
+import com.rbiggin.currency.converter.api.CurrencyConversionApi
+import com.rbiggin.currency.converter.model.CurrencyDto
+import com.rbiggin.currency.converter.model.CurrencyEntity
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -12,7 +15,7 @@ class CurrencyConverterRepositoryTest {
     private val api: CurrencyConversionApi = mockk(relaxed = true)
     private val mapper: CurrencyConversionMapper = mockk(relaxed = true)
 
-    private lateinit var repository: CurrencyConverterRepository
+    private lateinit var repository: CurrencyConverterDataSource
 
     private var updateListener: ((Set<CurrencyDto>) -> Unit)? = null
 
