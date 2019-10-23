@@ -1,7 +1,6 @@
 package com.rbiggin.currency.converter.api
 
 import android.os.Handler
-import com.rbiggin.currency.converter.NetworkCallError
 import com.rbiggin.currency.converter.model.CurrencyDto
 import io.mockk.*
 import org.junit.Before
@@ -9,13 +8,13 @@ import org.junit.Test
 
 class CurrencyConverterServiceTest {
 
-    private val networkApi: NetworkApi = mockk(relaxed = true)
+    private val networkApi: CurrencyNetworkApi = mockk(relaxed = true)
     private val handler: Handler = mockk(relaxed = true)
 
     private lateinit var service: CurrencyConversionApi
 
     private var updateListener: (Set<CurrencyDto>) -> Unit = mockk()
-    private var errorListener: (NetworkCallError) -> Unit = mockk()
+    private var errorListener: (Int?) -> Unit = mockk()
     private var refreshRunnable: CapturingSlot<Runnable> = slot()
 
     @Before
@@ -37,9 +36,7 @@ class CurrencyConverterServiceTest {
         service.setCurrencyCode(currencyCode)
 
         verify {
-            networkApi.setUrl(
-                CurrencyConverterService.BASE_URL + CurrencyConverterService.CURRENCY_CODE_SUFFIX + currencyCode
-            )
+            networkApi.setCurrencyCode(currencyCode)
         }
     }
 
@@ -110,7 +107,7 @@ class CurrencyConverterServiceTest {
     @Test
     fun `when error response received from api expect handler to be cleared`() {
         every { networkApi.makeCall(any(), captureLambda()) } answers {
-            lambda<(NetworkCallError) -> Unit>().captured.invoke(mockk())
+            lambda<(Int) -> Unit>().captured.invoke(mockk(relaxed = true))
         }
 
         service.setCurrencyCode("")
@@ -121,7 +118,7 @@ class CurrencyConverterServiceTest {
     @Test
     fun `when error response received from api expect timer to be triggered`() {
         every { networkApi.makeCall(any(), captureLambda()) } answers {
-            lambda<(NetworkCallError) -> Unit>().captured.invoke(mockk())
+            lambda<(Int) -> Unit>().captured.invoke(mockk(relaxed = true))
         }
 
         service.setCurrencyCode("")
@@ -132,7 +129,7 @@ class CurrencyConverterServiceTest {
     @Test
     fun `when error response received from api expect error listener to be informed`() {
         every { networkApi.makeCall(any(), captureLambda()) } answers {
-            lambda<(NetworkCallError) -> Unit>().captured.invoke(mockk())
+            lambda<(Int) -> Unit>().captured.invoke(mockk(relaxed = true))
         }
 
         service.setCurrencyCode("")
@@ -143,7 +140,7 @@ class CurrencyConverterServiceTest {
     @Test
     fun `when error response received and refresh timer as timed out expect network api call made`() {
         every { networkApi.makeCall(any(), captureLambda()) } answers {
-            lambda<(NetworkCallError) -> Unit>().captured.invoke(mockk())
+            lambda<(Int) -> Unit>().captured.invoke(mockk(relaxed = true))
         }
         service.setCurrencyCode("")
         refreshRunnable.captured.run()
