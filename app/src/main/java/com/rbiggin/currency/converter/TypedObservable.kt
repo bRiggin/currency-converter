@@ -4,9 +4,14 @@ import java.util.Observable
 
 class TypedObservable<T>(initialValue: T? = null) : Observable() {
 
-    var value: T? = null
+    var value: T? = initialValue
+        set(value) {
+            field = value
+            setChanged()
+            notifyObservers()
+        }
 
-    init {
-        initialValue?.let { value = it }
+    fun addTypedObserver(observer: TypedObserver<T>) {
+        super.addObserver(observer)
     }
 }
