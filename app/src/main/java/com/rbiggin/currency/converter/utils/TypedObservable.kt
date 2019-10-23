@@ -1,4 +1,4 @@
-package com.rbiggin.currency.converter
+package com.rbiggin.currency.converter.utils
 
 import java.util.Observable
 
