@@ -1,6 +1,5 @@
 package com.rbiggin.currency.converter.api
 
-import com.rbiggin.currency.converter.NetworkCallError
 import com.rbiggin.currency.converter.model.CurrencyDto
 
 interface CurrencyConversionApi {
@@ -9,5 +8,5 @@ interface CurrencyConversionApi {
 
     fun setUpdateListener(listener: (Set<CurrencyDto>) -> Unit)
 
-    fun setErrorListener(listener: (NetworkCallError) -> Unit)
+    fun setErrorListener(listener: (Int?) -> Unit)
 }

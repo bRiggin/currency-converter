@@ -1,11 +1,10 @@
 package com.rbiggin.currency.converter.api
 
 import android.os.Handler
-import com.rbiggin.currency.converter.NetworkCallError
 import com.rbiggin.currency.converter.model.CurrencyDto
 
 class CurrencyConverterService(
-    private val networkApi: NetworkApi,
+    private val networkApi: CurrencyNetworkApi,
     private val handler: Handler = Handler()
 ) : CurrencyConversionApi {
 
@@ -13,7 +12,7 @@ class CurrencyConverterService(
         handleNetworkResponse(dtos)
     }
 
-    private var networkErrorListener: (NetworkCallError) -> Unit = { error ->
+    private var networkErrorListener: (Int?) -> Unit = { error ->
         handleNetworkError(error)
     }
 
@@ -22,11 +21,11 @@ class CurrencyConverterService(
     }
 
     private var updateListener: ((Set<CurrencyDto>) -> Unit)? = null
-    private var errorListener: ((NetworkCallError) -> Unit)? = null
+    private var errorListener: ((Int?) -> Unit)? = null
 
     override fun setCurrencyCode(currencyCode: String) {
         clearHandler()
-        networkApi.setUrl(BASE_URL + CURRENCY_CODE_SUFFIX + currencyCode)
+        networkApi.setCurrencyCode(currencyCode)
         makeNetworkCall()
     }
 
@@ -34,12 +33,12 @@ class CurrencyConverterService(
         updateListener = listener
     }
 
-    override fun setErrorListener(listener: (NetworkCallError) -> Unit) {
+    override fun setErrorListener(listener: (Int?) -> Unit) {
         errorListener = listener
     }
 
-    private fun handleNetworkError(error: NetworkCallError) {
-        errorListener?.invoke(error)
+    private fun handleNetworkError(errorCode: Int?) {
+        errorListener?.invoke(errorCode)
         startRefreshTimer()
     }
 
@@ -62,8 +61,9 @@ class CurrencyConverterService(
     }
 
     companion object {
-        const val BASE_URL = "https://revolut.duckdns.org/latest"
-        const val CURRENCY_CODE_SUFFIX = "?base="
+        const val BASE_URL = "https://revolut.duckdns.org/"
+        const val RELATIVE_PATH = "/latest"
+        const val CURRENCY_QUERY_NAME = "base"
         private const val REFRESH_PERIOD_MS = 1000L
     }
 }
