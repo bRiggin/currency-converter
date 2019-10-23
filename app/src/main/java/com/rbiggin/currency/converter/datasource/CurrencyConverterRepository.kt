@@ -3,7 +3,7 @@ package com.rbiggin.currency.converter.datasource
 import com.rbiggin.currency.converter.api.CurrencyConversionApi
 import com.rbiggin.currency.converter.model.CurrencyDto
 import com.rbiggin.currency.converter.model.CurrencyEntity
-import com.rbiggin.currency.converter.TypedObservable
+import com.rbiggin.currency.converter.utils.TypedObservable
 
 class CurrencyConverterRepository(
     private val api: CurrencyConversionApi,
