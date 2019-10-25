@@ -102,15 +102,28 @@ class CurrencyInteractorTest {
         every { eurMock.conversionRate } returns eurCurrencyConversionRate
         val newConversionRate = eurCurrencyConversionRate + 1.0
         useCase.currencyStates.value = defaultUseCaseState
+
+        val updateMap = mapOf<String, CurrencyConversionEntity>(
+            eurCurrencyCode to mockk(relaxed = true) {
+                every { conversionRate } returns newConversionRate
+            },
+            jpyCurrencyCode to mockk(relaxed = true),
+            usdCurrencyCode to mockk(relaxed = true)
+        )
+
+        conversionObserver?.onUpdate(updateMap)
+        assertFalse(useCase.currencyStates.value?.get(eurCurrencyCode)?.conversionRate == eurCurrencyConversionRate)
+    }
+
+    @Test
+    fun `when when conversion update received and does not contain an existing currency code expect code not to be removed`() {
+        useCase.currencyStates.value = defaultUseCaseState
         conversionObserver?.onUpdate(
             mapOf(
-                eurCurrencyCode to mockk(relaxed = true) {
-                    every { conversionRate } returns  newConversionRate
-                },
-                jpyCurrencyCode to mockk(relaxed = true),
-                usdCurrencyCode to mockk(relaxed = true)
+                eurCurrencyCode to mockk(relaxed = true),
+                jpyCurrencyCode to mockk(relaxed = true)
             )
         )
-        assertFalse(useCase.currencyStates.value?.get(eurCurrencyCode)?.conversionRate == eurCurrencyConversionRate)
+        assertTrue(useCase.currencyStates.value?.containsKey(usdCurrencyCode) == true)
     }
 }
