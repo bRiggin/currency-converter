@@ -2,7 +2,7 @@ package com.rbiggin.currency.converter.datasource
 
 import com.rbiggin.currency.converter.api.CurrencyConversionApi
 import com.rbiggin.currency.converter.model.CurrencyDto
-import com.rbiggin.currency.converter.model.CurrencyEntity
+import com.rbiggin.currency.converter.model.CurrencyConversionEntity
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -15,7 +15,7 @@ class CurrencyConverterRepositoryTest {
     private val api: CurrencyConversionApi = mockk(relaxed = true)
     private val mapper: CurrencyConversionMapper = mockk(relaxed = true)
 
-    private lateinit var repository: CurrencyConverterDataSource
+    private lateinit var repository: CurrencyConversionDataSource
 
     private var updateListener: ((Set<CurrencyDto>) -> Unit)? = null
 
@@ -25,12 +25,12 @@ class CurrencyConverterRepositoryTest {
             updateListener = lambda<((Set<CurrencyDto>) -> Unit)>().captured
         }
 
-        repository = CurrencyConverterRepository(api, mapper)
+        repository = CurrencyConversionRepository(api, mapper)
     }
 
     @Test
     fun `when initialised expect repository to set api with default currency`() {
-        verify { api.setCurrencyCode(CurrencyConverterRepository.DEFAULT_CURRENCY_CODE) }
+        verify { api.setCurrencyCode(CurrencyConversionRepository.DEFAULT_CURRENCY_CODE) }
     }
 
     @Test
@@ -89,16 +89,16 @@ class CurrencyConverterRepositoryTest {
     @Test
     fun `when update contains new currency expect data source observable to be updated`() {
         val update = setOf<CurrencyDto>(mockk())
-        val newEntity: CurrencyEntity = mockk()
+        val newEntity: CurrencyConversionEntity = mockk()
         val newNativeCode = "STL"
         every { newEntity.nativeCode } returns newNativeCode
         every { mapper.convertDtoToEntity(any()) } returns newEntity
 
         repository.observable.value =
             mapOf(
-                "EUR" to CurrencyEntity("EUR", "", 0.0),
-                "JPN" to CurrencyEntity("JPN", "", 0.0),
-                "USD" to CurrencyEntity("USD", "", 0.0)
+                "EUR" to CurrencyConversionEntity("EUR", "", 0.0),
+                "JPN" to CurrencyConversionEntity("JPN", "", 0.0),
+                "USD" to CurrencyConversionEntity("USD", "", 0.0)
             )
         updateListener?.invoke(update)
 
@@ -108,7 +108,7 @@ class CurrencyConverterRepositoryTest {
     @Test
     fun `when update contains new conversion rate for currency expect data source observable to be updated`() {
         val update = setOf<CurrencyDto>(mockk())
-        val newEntity: CurrencyEntity = mockk()
+        val newEntity: CurrencyConversionEntity = mockk()
         val nativeCode = "EUR"
         val newConversionRate = 7.4
         val oldConversionRate = 7.4
@@ -117,7 +117,7 @@ class CurrencyConverterRepositoryTest {
         every { mapper.convertDtoToEntity(any()) } returns newEntity
 
         repository.observable.value =
-            mapOf(nativeCode to CurrencyEntity(nativeCode, "", oldConversionRate))
+            mapOf(nativeCode to CurrencyConversionEntity(nativeCode, "", oldConversionRate))
         updateListener?.invoke(update)
 
         assertEquals(newConversionRate, repository.observable.value?.get(nativeCode)?.conversionRate)

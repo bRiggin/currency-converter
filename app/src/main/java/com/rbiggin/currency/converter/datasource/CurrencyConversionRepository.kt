@@ -2,18 +2,18 @@ package com.rbiggin.currency.converter.datasource
 
 import com.rbiggin.currency.converter.api.CurrencyConversionApi
 import com.rbiggin.currency.converter.model.CurrencyDto
-import com.rbiggin.currency.converter.model.CurrencyEntity
+import com.rbiggin.currency.converter.model.CurrencyConversionEntity
 import com.rbiggin.currency.converter.utils.TypedObservable
 
-class CurrencyConverterRepository(
+class CurrencyConversionRepository(
     private val api: CurrencyConversionApi,
     private val mapper: CurrencyConversionMapper = CurrencyConversionMapper
-) : CurrencyConverterDataSource {
+) : CurrencyConversionDataSource {
 
-    override val observable: TypedObservable<Map<String, CurrencyEntity>> =
+    override val observable: TypedObservable<Map<String, CurrencyConversionEntity>> =
         TypedObservable()
 
-    private val currentState: Map<String, CurrencyEntity>?
+    private val currentState: Map<String, CurrencyConversionEntity>?
         get() = observable.value
 
     private val updateListener: (Set<CurrencyDto>) -> Unit = { update ->
@@ -53,7 +53,7 @@ class CurrencyConverterRepository(
         }
     }
 
-    private fun publishNewState(newState: Map<String, CurrencyEntity>) {
+    private fun publishNewState(newState: Map<String, CurrencyConversionEntity>) {
         observable.value = newState
     }
 
