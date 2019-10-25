@@ -49,7 +49,7 @@ class CurrencyInteractor(
                 }
             } else {
                 state[updateEntry.key] =
-                    CurrencyState(updateEntry.value.nativeCode, updateEntry.value.conversionRate)
+                    CurrencyState(updateEntry.value.subjectCode, updateEntry.value.conversionRate)
                 updateRequired = true
             }
         }

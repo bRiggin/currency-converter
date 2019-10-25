@@ -1,6 +1,5 @@
 package com.rbiggin.currency.converter.datasource
 
-import com.rbiggin.currency.converter.datasource.CurrencyConversionMapper
 import com.rbiggin.currency.converter.model.CurrencyDto
 import io.mockk.every
 import io.mockk.mockk
@@ -17,7 +16,7 @@ class CurrencyConversionMapperTest {
         every { dtoObject.nativeCode } returns nativeCurrencyCode
 
         assertEquals(nativeCurrencyCode,
-            CurrencyConversionMapper.convertDtoToEntity(dtoObject).nativeCode)
+            CurrencyConversionMapper.convertDtoToEntity(dtoObject).subjectCode)
     }
 
     @Test
@@ -26,7 +25,7 @@ class CurrencyConversionMapperTest {
         every { dtoObject.foreignCode } returns foreignCurrencyCode
 
         assertEquals(foreignCurrencyCode,
-            CurrencyConversionMapper.convertDtoToEntity(dtoObject).foreignCode)
+            CurrencyConversionMapper.convertDtoToEntity(dtoObject).targetCode)
     }
 
     @Test

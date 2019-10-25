@@ -91,7 +91,7 @@ class CurrencyConverterRepositoryTest {
         val update = setOf<CurrencyDto>(mockk())
         val newEntity: CurrencyConversionEntity = mockk()
         val newNativeCode = "STL"
-        every { newEntity.nativeCode } returns newNativeCode
+        every { newEntity.subjectCode } returns newNativeCode
         every { mapper.convertDtoToEntity(any()) } returns newEntity
 
         repository.observable.value =
@@ -112,7 +112,7 @@ class CurrencyConverterRepositoryTest {
         val nativeCode = "EUR"
         val newConversionRate = 7.4
         val oldConversionRate = 7.4
-        every { newEntity.nativeCode } returns nativeCode
+        every { newEntity.subjectCode } returns nativeCode
         every { newEntity.conversionRate } returns newConversionRate
         every { mapper.convertDtoToEntity(any()) } returns newEntity
 

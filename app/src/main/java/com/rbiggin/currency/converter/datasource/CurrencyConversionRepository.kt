@@ -37,13 +37,13 @@ class CurrencyConversionRepository(
 
         update.forEach { dto ->
             val newEntity = mapper.convertDtoToEntity(dto)
-            if (currentState?.containsKey(newEntity.nativeCode) == true) {
-                if (currentState?.get(newEntity.nativeCode) != newEntity) {
-                    newState[newEntity.nativeCode] = newEntity
+            if (currentState?.containsKey(newEntity.subjectCode) == true) {
+                if (currentState?.get(newEntity.subjectCode) != newEntity) {
+                    newState[newEntity.subjectCode] = newEntity
                     publishUpdateRequired = true
                 }
             } else {
-                newState[newEntity.nativeCode] = newEntity
+                newState[newEntity.subjectCode] = newEntity
                 publishUpdateRequired = true
             }
         }
