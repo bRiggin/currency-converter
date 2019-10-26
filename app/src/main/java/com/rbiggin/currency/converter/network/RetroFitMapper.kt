@@ -10,6 +10,8 @@ object RetroFitMapper {
             returnedSet.add(CurrencyDto(retrofitDto.date, mapEntry.key, retrofitDto.base, mapEntry.value))
         }
 
+        returnedSet.add(CurrencyDto(retrofitDto.date, retrofitDto.base, retrofitDto.base, 1.0))
+
         return returnedSet
     }
 }

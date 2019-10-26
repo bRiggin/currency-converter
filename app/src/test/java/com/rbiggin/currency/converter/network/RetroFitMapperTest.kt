@@ -28,9 +28,9 @@ class RetroFitMapperTest {
     }
 
     @Test
-    fun `when mapper request to map to dto and no rates in response expect empty set`() {
+    fun `when mapper request to map to dto and no rates in response expect set containing only base currency`() {
         every { retroFitDto.rates } returns mapOf()
-        assertTrue(RetroFitMapper.retrofitDtoToCurrencyDto(retroFitDto).isEmpty())
+        assertEquals(1, RetroFitMapper.retrofitDtoToCurrencyDto(retroFitDto).size)
     }
 
     @Test
@@ -48,8 +48,8 @@ class RetroFitMapperTest {
     }
 
     @Test
-    fun `when mapper request to map to dto expect set size to match number of rates`() {
-        assertEquals(defaultRates.size, RetroFitMapper.retrofitDtoToCurrencyDto(retroFitDto).size)
+    fun `when mapper request to map to dto expect set size to match number of rates plus base currency`() {
+        assertEquals(defaultRates.size + 1, RetroFitMapper.retrofitDtoToCurrencyDto(retroFitDto).size)
     }
 
     @Test
@@ -59,5 +59,12 @@ class RetroFitMapperTest {
         retroFitDto.rates.forEach { (key, value) ->
             assertTrue(dtoSet.contains(CurrencyDto(defaultDate, key, defaultBase, value)))
         }
+    }
+
+    @Test
+    fun `when mapper requested to map dto expect dto base object included with 1 conversion rate`() {
+        val dtoSet = RetroFitMapper.retrofitDtoToCurrencyDto(retroFitDto)
+
+        assertTrue(dtoSet.contains(CurrencyDto(defaultDate, defaultBase, defaultBase, 1.0)))
     }
 }
