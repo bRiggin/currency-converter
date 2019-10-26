@@ -13,8 +13,11 @@ class CurrencyConversionViewModel(
     private val mapper: ViewModelMapper = ViewModelMapper
 ) : ViewModel() {
 
-    var inputValue = 1.0
-        set(_) = handleNewInputValue()
+    var inputValue: Int = 100
+        set(value) {
+            field = value
+            handleNewInputValue()
+        }
 
     private val mutableUpdate = MutableLiveData<UpdateType>()
     val listUpdates: LiveData<UpdateType>
@@ -46,13 +49,13 @@ class CurrencyConversionViewModel(
     }
 
     private fun handleNewInputValue() {
-        val valueInEuros = mutableList[0].subjectCurrencyToTarget(inputValue)
+        val valueInEuros = mutableList[0].subjectCurrencyToTarget(inputValue.toDouble())
         val updatedIndexes = mutableListOf<Int>()
         val updatedItems = mutableMapOf<Int, CurrencyModel>()
 
         mutableList.forEachIndexed { index, currencyModel ->
             if (index != 0) {
-                val newValue = currencyModel.targetToSubjectCurrency(valueInEuros)
+                val newValue = currencyModel.targetToSubjectCurrency(valueInEuros.toDouble())
                 val newModel = currencyModel.copy(value = newValue)
                 updatedItems[index] = newModel
                 updatedIndexes.add(index)
@@ -100,16 +103,15 @@ class CurrencyConversionViewModel(
         var numberOfNewItems = 0
 
         update.entries.forEach { updateEntry ->
-            val currentEntry = mutableList.find { it.currencyCode == updateEntry.key }
+            val currentElement = mutableList.find { it.currencyCode == updateEntry.key }
+            val newElement = mapper.stateToModel(inputValue, updateEntry.value)
 
-            if (currentEntry != null &&
-                !mapper.stateAndModelEquivalent(updateEntry.value, currentEntry)
-            ) {
-                val index = mutableList.indexOf(currentEntry)
-                mutableList[index] = mapper.stateToModel(inputValue, updateEntry.value)
+            if (currentElement != null && currentElement.value != newElement.value) {
+                val index = mutableList.indexOf(currentElement)
+                mutableList[index] = newElement
                 updatedIndexes.add(index)
-            } else if (currentEntry == null) {
-                mutableList.add(mapper.stateToModel(inputValue, updateEntry.value))
+            } else if (currentElement == null) {
+                mutableList.add(newElement)
                 numberOfNewItems++
             }
         }

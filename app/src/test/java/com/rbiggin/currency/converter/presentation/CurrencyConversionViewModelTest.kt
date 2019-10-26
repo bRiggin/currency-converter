@@ -233,7 +233,7 @@ class CurrencyConversionViewModelTest {
     fun `when a new input value is submitted expect all but top index to be updated`() {
         observerSlot.captured.onUpdate(defaultUpdate)
 
-        viewModel.inputValue = 49.0
+        viewModel.inputValue = 49
 
         assertEquals(
             CurrencyConversionViewModel.UpdateType.ItemsUpdate(listOf(1, 2)),
@@ -248,7 +248,7 @@ class CurrencyConversionViewModelTest {
         val listItemTwo = viewModel.conversionList[1]
         val listItemThree = viewModel.conversionList[2]
 
-        viewModel.inputValue = 49.0
+        viewModel.inputValue = 49
 
         assertFalse(listItemTwo.value != viewModel.conversionList[1].value)
         assertFalse(listItemThree.value != viewModel.conversionList[2].value)
@@ -260,8 +260,8 @@ class CurrencyConversionViewModelTest {
 
         val originalValue = viewModel.conversionList[0].value
 
-        viewModel.inputValue = 49.0
+        viewModel.inputValue = 49
 
-        assertEquals(originalValue, viewModel.conversionList[0].value, 0.0)
+        assertEquals(originalValue, viewModel.conversionList[0].value)
     }
 }
