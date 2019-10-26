@@ -27,4 +27,6 @@ val koinModule = module {
     factory<MetaDataApi> { CurrencyMetaDataService(get()) }
 
     factory<CurrencyNetworkApi> { RetroFitApi() }
+
+    factory<MetaDataNetworkApi> { RetroFitMetaDataApi() }
 }
