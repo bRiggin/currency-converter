@@ -69,8 +69,16 @@ class CurrencyMetaDataService(
             }
         }
 
-        largestDto?.let {
-            updateListener?.invoke(MetaDataDto(currencyCode, it.name, it.flag))
+        largestDto?.let { dto ->
+            val currencyName = dto.currencies.find {
+                it["code"] == currencyCode
+            }?.get("name") ?: ""
+
+            updateListener?.invoke(MetaDataDto(currencyCode, currencyName, dto.flag))
         }
+    }
+
+    companion object {
+        const val BASE_URL = "https://restcountries.eu/rest/v2/currency/"
     }
 }
