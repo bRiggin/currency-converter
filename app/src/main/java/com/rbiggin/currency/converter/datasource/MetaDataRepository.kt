@@ -42,12 +42,14 @@ class MetaDataRepository(
             if (currentState?.containsKey(it) != true) requiredCurrencies.add(it)
         }
 
-        updateQueueAndQueryApi(requiredCurrencies)
+        if (requiredCurrencies.isNotEmpty())
+            updateQueueAndQueryApi(requiredCurrencies)
     }
 
     private fun updateQueueAndQueryApi(currencies: Set<String>? = null) {
         currencies?.forEach {
-            if (!currenciesQueue.contains(it)) currenciesQueue.add(it)
+            if (!currenciesQueue.contains(it))
+                currenciesQueue.add(it)
         }
 
         if (!currencyPending && currenciesQueue.isNotEmpty()) requestCurrency(currenciesQueue.first())

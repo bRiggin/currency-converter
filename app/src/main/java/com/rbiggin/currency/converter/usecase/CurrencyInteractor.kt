@@ -20,20 +20,38 @@ class CurrencyInteractor(
 
     private var conversionObserver = object : TypedObserver<Map<String, CurrencyConversionEntity>> {
         override fun onUpdate(value: Map<String, CurrencyConversionEntity>) {
-            updateStateFromConversionsUpdate(value)
+            newFunciton(value)
         }
     }
 
-    private var metaDataObserver = object : TypedObserver<Map<String, CurrencyMetaDataEntity>> {
-        override fun onUpdate(value: Map<String, CurrencyMetaDataEntity>) {
-            updateStateFromMetaDataUpdate(value)
-        }
-    }
+//    private var metaDataObserver = object : TypedObserver<Map<String, CurrencyMetaDataEntity>> {
+//        override fun onUpdate(value: Map<String, CurrencyMetaDataEntity>) {
+//            updateStateFromMetaDataUpdate(value)
+//        }
+//    }
 
     init {
         conversionDataSource.observable.addTypedObserver(conversionObserver)
-        metaDataDataSource.observable.addTypedObserver(metaDataObserver)
+//        metaDataDataSource.observable.addTypedObserver(metaDataObserver)
     }
+
+    private fun newFunciton(entities: Map<String, CurrencyConversionEntity>) {
+        metaDataDataSource.getMetaData(entities.mapKeysToSet())
+
+        val newMap = mutableMapOf<String, CurrencyState>()
+
+        entities.entries.forEach { entity ->
+            val currencyCode = entity.key
+            val conversionRate = entity.value.conversionRate
+            val currencyName = metaDataDataSource.observable.value?.get(currencyCode)?.currencyName
+            val flagUrl = metaDataDataSource.observable.value?.get(currencyCode)?.flagUrl
+            val newEntity = CurrencyState(currencyCode, conversionRate, currencyName, flagUrl)
+            newMap[currencyCode] =  newEntity
+        }
+
+        currencyStates.value = newMap
+    }
+
 
     private fun updateStateFromMetaDataUpdate(entities: Map<String, CurrencyMetaDataEntity>) {
         val state = currentState?.toMutableMap() ?: mutableMapOf()
@@ -58,14 +76,14 @@ class CurrencyInteractor(
                     currentState.flagAssetUrl
                 }
 
-                val currencyCode = if (currentState.currencyName != updateEntry.value.currencyName) {
+                val currencyName = if (currentState.currencyName != updateEntry.value.currencyName) {
                     updateRequired = true
-                    updateEntry.value.currencyCode
+                    updateEntry.value.currencyName
                 } else {
-                    currentState.currencyCode
+                    currentState.currencyName
                 }
 
-                state[updateEntry.key] = currentState.copy(currencyName = currencyCode, flagAssetUrl = flagUrl)
+                state[updateEntry.key] = currentState.copy(currencyName = currencyName, flagAssetUrl = flagUrl)
             }
         }
         return updateRequired

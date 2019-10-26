@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/currencyFlag"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -24,7 +24,7 @@
             android:layout_margin="8dp"
             app:layout_constraintStart_toEndOf="@+id/currencyFlag"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/currencyValueEditText"/>
+            app:layout_constraintEnd_toStartOf="@+id/viewSwitcher"/>
 
     <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/currencyName"
@@ -35,23 +35,40 @@
             app:layout_constraintTop_toBottomOf="@+id/currencyCode"
             app:layout_constraintStart_toEndOf="@+id/currencyFlag"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/currencyValueEditText" />
+            app:layout_constraintEnd_toStartOf="@+id/viewSwitcher"/>
 
-    <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/currencyValueEditText"
+    <ViewSwitcher
+            android:id="@+id/viewSwitcher"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:maxLines="1"
-            android:maxWidth="128dp"
-            android:textSize="16sp"
-            android:layout_margin="8dp"
-            android:ellipsize="end"
-            android:imeActionLabel="@string/app_name"
-            android:imeOptions="actionDone"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="122456"/>
+            app:layout_constraintBottom_toBottomOf="parent">
+        <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/currencyValueTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:maxWidth="128dp"
+                android:textSize="16sp"
+                android:layout_margin="8dp"
+                android:ellipsize="end"
+                tools:text="122456"/>
+
+        <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/currencyValueEditText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:inputType="number"
+                android:maxLines="1"
+                android:maxWidth="128dp"
+                android:textSize="16sp"
+                android:layout_margin="8dp"
+                android:ellipsize="end"
+                android:imeOptions="actionDone"
+                tools:text="122456"/>
+
+    </ViewSwitcher>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

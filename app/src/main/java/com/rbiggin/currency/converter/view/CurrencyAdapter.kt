@@ -16,11 +16,12 @@ import kotlinx.android.synthetic.main.list_item_currency_view.view.*
 class CurrencyAdapter(
     private val activity: Activity,
     private val list: List<CurrencyModel>,
-    private val inputListener: CurrencyAdapterListener? = null
+    private val inputChangeListener: (Int) -> Unit,
+    private val itemTouchListener: (Int) -> Unit
 ) : RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrencyViewHolder =
-        CurrencyViewHolder(parent.inflate(R.layout.list_item_currency_view))
+        CurrencyViewHolder(parent.inflate(R.layout.list_item_currency_view), inputChangeListener)
 
     override fun getItemCount(): Int = list.size
 
@@ -32,13 +33,9 @@ class CurrencyAdapter(
             listItem.currencyName?.let { holder.setCurrencyName(it) }
             listItem.flagAssetUrl?.let { holder.setFlag(it, activity) }
             setCurrencyCode(listItem.currencyCode)
-            setValue(listItem.value, isTopItem)
-            setEditTextEnabled(isTopItem)
-            if (isTopItem) {
-                listener = { inputValue ->
-                    inputListener?.onNewInputValue(inputValue)
-                }
-            }
+            setValue(listItem.value)
+            setAsTopView(isTopItem)
+            holder.view.setOnClickListener { itemTouchListener(position) }
         }
     }
 
@@ -46,45 +43,36 @@ class CurrencyAdapter(
         LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)
 
     class CurrencyViewHolder(
-        private val view: View
+        val view: View,
+        private val listener: (Int) -> Unit
     ) : RecyclerView.ViewHolder(view) {
         private val textWatcher = GenericTextWatcher()
-        private var currencyValue: Int? = null
-        var listener: ((Int) -> Unit)? = null
 
-        fun setEditTextEnabled(enabled: Boolean) {
-            view.currencyValueEditText.isEnabled = enabled
-            val editText = view.currencyValueEditText
+        init {
+            view.currencyValueEditText.addTextChangedListener(textWatcher)
+        }
 
-            if (enabled) {
-                editText.addTextChangedListener(textWatcher)
-            } else {
-                editText.removeTextChangedListener(textWatcher)
+        fun setAsTopView(isTop: Boolean) {
+            with(view) {
+                viewSwitcher.displayedChild = if (isTop) {
+                    viewSwitcher.indexOfChild(currencyValueEditText)
+                } else {
+                    viewSwitcher.indexOfChild(currencyValueTextView)
+                }
             }
         }
 
         fun setCurrencyCode(code: String) {
-            if (view.currencyCode.text != code)
-                view.currencyCode.text = code
+            view.currencyCode.text = code
         }
 
         fun setCurrencyName(name: String) {
             view.currencyName.text = name
         }
 
-        fun setValue(newValue: Int, isSubjectCode: Boolean) {
-            if (isSubjectCode) {
-                if (currencyValue == null) setValue(newValue)
-            } else {
-                setValue(newValue)
-            }
+        fun setValue(newValue: Int) {
+            view.currencyValueTextView.text = newValue.toString()
         }
-
-        private fun setValue(newValue: Int) {
-            currencyValue = newValue
-            view.currencyValueEditText.setText(newValue.toString())
-        }
-
 
         fun setFlag(url: String, activity: Activity) {
             SvgLoader.pluck()
@@ -94,12 +82,10 @@ class CurrencyAdapter(
         }
 
         inner class GenericTextWatcher : TextWatcher {
-            override fun afterTextChanged(editable: Editable?) {
-            }
-
+            override fun afterTextChanged(editable: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                listener?.invoke(s.toString().toInt())
+                listener(s?.toString()?.toInt() ?: 0)
             }
         }
     }

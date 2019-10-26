@@ -9,14 +9,20 @@ import com.rbiggin.currency.converter.usecase.CurrencyUseCase
 import com.rbiggin.currency.converter.utils.TypedObserver
 
 class CurrencyConversionViewModel(
-    currencyUseCase: CurrencyUseCase,
+    private val currencyUseCase: CurrencyUseCase,
     private val mapper: ViewModelMapper = ViewModelMapper
 ) : ViewModel() {
+
+    private var currentCurrencyCode = "EUR"
+        set(value) {
+            field = value
+            newFunctionMapToList(currencyUseCase.currencyStates.value ?: mapOf())
+        }
 
     var inputValue: Int = 100
         set(value) {
             field = value
-            handleNewInputValue()
+            newFunctionMapToList(currencyUseCase.currencyStates.value ?: mapOf())
         }
 
     private val mutableUpdate = MutableLiveData<UpdateType>()
@@ -29,13 +35,46 @@ class CurrencyConversionViewModel(
 
     private val observer = object : TypedObserver<Map<String, CurrencyState>> {
         override fun onUpdate(value: Map<String, CurrencyState>) {
-            handleConversionUpdate(value)
+//            handleConversionUpdate(value)
+            newFunctionMapToList(value)
         }
     }
 
     init {
         currencyUseCase.currencyStates.addTypedObserver(observer)
     }
+
+    @Synchronized private fun newFunctionMapToList(map: Map<String, CurrencyState>) {
+        val newList = mutableListOf<CurrencyModel>()
+
+        map.entries.forEachIndexed { index, entry ->
+            val code = entry.key
+            val conversion = entry.value.conversionRate
+            val value = entry.value.subjectCurrencyToTarget(inputValue)
+            val name = entry.value.currencyName
+            val url = entry.value.flagAssetUrl
+            newList.add(index, CurrencyModel(code, conversion, value, name, url))
+        }
+
+        newList.find { it.currencyCode == currentCurrencyCode }?.let {
+            newList.apply {
+                remove(it)
+                add(0, it)
+            }
+        }
+
+        newList.forEachIndexed { index, currencyModel ->
+            if (mutableList.elementAtOrNull(index) != null) {
+                mutableList[index] = currencyModel
+            } else {
+                mutableList.add(index, currencyModel)
+            }
+
+        }
+
+        mutableUpdate.value = if (mutableUpdate.value == null) UpdateType.InitialUpdate else UpdateType.Pop
+    }
+
 
     fun onItemTouched(index: Int) {
         if (index != 0 && index in 0 until conversionList.size) {
@@ -44,6 +83,7 @@ class CurrencyConversionViewModel(
                 remove(element)
                 add(0, element)
             }
+            currentCurrencyCode = element.currencyCode
             mutableUpdate.value = UpdateType.NewTopItem(index)
         }
     }
@@ -137,6 +177,7 @@ class CurrencyConversionViewModel(
 
     sealed class UpdateType {
         object InitialUpdate : UpdateType()
+        object Pop : UpdateType()
         data class ItemsUpdate(
             val indexesChanged: List<Int>,
             val newItems: NewItems? = null

@@ -20,7 +20,9 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList, this)
+        recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList,
+            { viewModel.inputValue = it },
+            { viewModel.onItemTouched(it)})
 
         with(recyclerView) {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
@@ -44,12 +46,18 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
 //                update.indexesChanged.forEach {
 //                    recyclerView.adapter?.notifyItemChanged(it)
 //                }
-                if (update.indexesChanged.isNotEmpty()) recyclerView.adapter?.notifyDataSetChanged()
+                if (update.indexesChanged.isNotEmpty()) {
+                    recyclerView.post { recyclerView.adapter?.notifyDataSetChanged() }
+                }
             }
             is CurrencyConversionViewModel.UpdateType.NewTopItem ->
                 recyclerView.adapter?.notifyItemMoved(update.fromIndex, 0)
             CurrencyConversionViewModel.UpdateType.InitialUpdate ->
-                recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList, this)
+                recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList,
+                    { viewModel.inputValue = it },
+                    { viewModel.onItemTouched(it)})
+            CurrencyConversionViewModel.UpdateType.Pop ->
+                recyclerView.adapter?.notifyDataSetChanged()
         }
     }
 
