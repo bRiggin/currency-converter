@@ -16,7 +16,7 @@ val koinModule = module {
 
     viewModel { CurrencyConversionViewModel(get()) }
 
-    factory<CurrencyUseCase> { CurrencyInteractor(get()) }
+    factory<CurrencyUseCase> { CurrencyInteractor(get(), get()) }
 
     single<CurrencyConversionDataSource> { CurrencyConversionRepository(get()) }
 
