@@ -1,7 +1,9 @@
 package com.rbiggin.currency.converter.usecase
 
 import com.rbiggin.currency.converter.datasource.CurrencyConversionDataSource
+import com.rbiggin.currency.converter.datasource.MetaDataDataSource
 import com.rbiggin.currency.converter.model.CurrencyConversionEntity
+import com.rbiggin.currency.converter.model.CurrencyMetaDataEntity
 import com.rbiggin.currency.converter.model.CurrencyState
 import com.rbiggin.currency.converter.utils.TypedObservable
 import com.rbiggin.currency.converter.utils.TypedObserver
@@ -14,6 +16,7 @@ import org.junit.Test
 class CurrencyInteractorTest {
 
     private val conversionDataSource: CurrencyConversionDataSource = mockk()
+    private val metaDataDatSource: MetaDataDataSource = mockk(relaxed = true)
 
     private lateinit var useCase: CurrencyUseCase
 
@@ -22,6 +25,12 @@ class CurrencyInteractorTest {
 
     private val conversionObserverSlot: CapturingSlot<TypedObserver<Map<String, CurrencyConversionEntity>>> = slot()
     private var conversionObserver: TypedObserver<Map<String, CurrencyConversionEntity>>? = null
+
+    private val metaDataObservable: TypedObservable<Map<String, CurrencyMetaDataEntity>> = mockk(relaxed = true)
+    private val metaDataState: Map<String, CurrencyMetaDataEntity> = mockk()
+
+    private val metaDataObserverSlot: CapturingSlot<TypedObserver<Map<String, CurrencyMetaDataEntity>>> = slot()
+    private var metaDataObserver: TypedObserver<Map<String, CurrencyMetaDataEntity>>? = null
 
     private val cadCurrencyCode: String = "CAD"
 
@@ -55,12 +64,23 @@ class CurrencyInteractorTest {
             conversionObserver = conversionObserverSlot.captured
         }
 
-        useCase = CurrencyInteractor(conversionDataSource)
+        every { metaDataDatSource.observable } returns metaDataObservable
+        every { metaDataObservable.value } returns metaDataState
+        every { metaDataObservable.addTypedObserver(capture(metaDataObserverSlot)) } answers {
+            metaDataObserver = metaDataObserverSlot.captured
+        }
+
+        useCase = CurrencyInteractor(metaDataDatSource, conversionDataSource)
     }
 
     @Test
     fun `when initialised expect observer added to conversion data source`() {
         verify { conversionObservable.addTypedObserver(any()) }
+    }
+
+    @Test
+    fun `when initialised expect observer added to meta data data source`() {
+        verify { metaDataObservable.addTypedObserver(any()) }
     }
 
     @Test
@@ -125,5 +145,54 @@ class CurrencyInteractorTest {
             )
         )
         assertTrue(useCase.currencyStates.value?.containsKey(usdCurrencyCode) == true)
+    }
+
+    @Test
+    fun `when when conversion update received expect meta data data source to be queried`() {
+        conversionObserver?.onUpdate(
+            mapOf(
+                eurCurrencyCode to mockk(relaxed = true),
+                jpyCurrencyCode to mockk(relaxed = true),
+                usdCurrencyCode to mockk(relaxed = true)
+            )
+        )
+        verify { metaDataDatSource.getMetaData(setOf(eurCurrencyCode, jpyCurrencyCode, usdCurrencyCode)) }
+    }
+
+    @Test
+    fun `when update received from meta data data source expect data added to state`(){
+        conversionObserver?.onUpdate(
+            mapOf(
+                eurCurrencyCode to mockk(relaxed = true),
+                jpyCurrencyCode to mockk(relaxed = true),
+                usdCurrencyCode to mockk(relaxed = true)
+            )
+        )
+        val originalEuroState = useCase.currencyStates.value?.get(eurCurrencyCode)
+
+        metaDataObserver?.onUpdate(mapOf(eurCurrencyCode to mockk(relaxed = true)))
+        assertFalse(originalEuroState == useCase.currencyStates.value?.get(eurCurrencyCode))
+    }
+
+    @Test
+    fun `when update received from meta data data source and data has not changed expect no update`(){
+        val eurMetaData = mockk<CurrencyMetaDataEntity>{
+            every { currencyCode } returns eurCurrencyCode
+            every { currencyName } returns "Euro"
+            every { flagUrl } returns "Mock URL"
+        }
+
+        conversionObserver?.onUpdate(
+            mapOf(
+                eurCurrencyCode to mockk(relaxed = true),
+                jpyCurrencyCode to mockk(relaxed = true),
+                usdCurrencyCode to mockk(relaxed = true)
+            )
+        )
+        metaDataObserver?.onUpdate(mapOf(eurCurrencyCode to eurMetaData))
+        val originalEuroState = useCase.currencyStates.value?.get(eurCurrencyCode)
+
+        metaDataObserver?.onUpdate(mapOf(eurCurrencyCode to eurMetaData))
+        assertEquals(originalEuroState, useCase.currencyStates.value?.get(eurCurrencyCode))
     }
 }
