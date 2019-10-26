@@ -14,7 +14,10 @@ class CurrencyConversionViewModel(
 ) : ViewModel() {
 
     var inputValue: Int = 100
-        set(_) = handleNewInputValue()
+        set(value) {
+            field = value
+            handleNewInputValue()
+        }
 
     private val mutableUpdate = MutableLiveData<UpdateType>()
     val listUpdates: LiveData<UpdateType>

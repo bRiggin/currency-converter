@@ -13,14 +13,14 @@ import com.rbiggin.currency.converter.presentation.CurrencyConversionViewModel
 import kotlinx.android.synthetic.main.fragment_currency.*
 import org.koin.android.viewmodel.ext.android.viewModel
 
-class CurrencyFragment : Fragment(R.layout.fragment_currency) {
+class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterListener {
 
     private val viewModel: CurrencyConversionViewModel by viewModel()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList)
+        recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList, this)
 
         with(recyclerView) {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
@@ -37,19 +37,27 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency) {
 
     private fun updateList(update: CurrencyConversionViewModel.UpdateType) {
         when (update) {
-            is CurrencyConversionViewModel.UpdateType.ItemsUpdate ->{
+            is CurrencyConversionViewModel.UpdateType.ItemsUpdate -> {
                 update.newItems?.let {
                     recyclerView.adapter?.notifyItemRangeInserted(it.insertIndex, it.numberOfItems)
                 }
-                update.indexesChanged.forEach {
-                    recyclerView.adapter?.notifyItemChanged(it)
-                }
-//                if (update.indexesChanged.isNotEmpty()) recyclerView.adapter?.notifyDataSetChanged()
+//                update.indexesChanged.forEach {
+//                    recyclerView.adapter?.notifyItemChanged(it)
+//                }
+                if (update.indexesChanged.isNotEmpty()) recyclerView.adapter?.notifyDataSetChanged()
             }
             is CurrencyConversionViewModel.UpdateType.NewTopItem ->
                 recyclerView.adapter?.notifyItemMoved(update.fromIndex, 0)
             CurrencyConversionViewModel.UpdateType.InitialUpdate ->
-                recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList)
+                recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList, this)
         }
+    }
+
+    override fun onNewInputValue(input: Int) {
+        viewModel.inputValue = input
+    }
+
+    override fun onItemClicked(index: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
