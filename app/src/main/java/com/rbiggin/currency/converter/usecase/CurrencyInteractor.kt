@@ -15,6 +15,9 @@ class CurrencyInteractor(
 
     override val currencyStates: TypedObservable<Map<String, CurrencyState>> = TypedObservable()
 
+    private val metaDataState: Map<String, CurrencyMetaDataEntity>?
+        get() = metaDataDataSource.observable.value
+
     private var conversionObserver = object : TypedObserver<Map<String, CurrencyConversionEntity>> {
         override fun onUpdate(value: Map<String, CurrencyConversionEntity>) {
             updateCurrencyStates(value)
@@ -40,20 +43,23 @@ class CurrencyInteractor(
         entities?.let {
             metaDataDataSource.getMetaData(entities.mapKeysToSet())
 
-            val newMap = mutableMapOf<String, CurrencyState>()
+            val newMap = currencyStates.value?.toMutableMap() ?: mutableMapOf()
 
             entities.entries.forEach { entity ->
-                val currencyCode = entity.key
-                val conversionRate = entity.value.conversionRate
-                val currencyName = metaDataDataSource.observable.value?.get(currencyCode)?.currencyName
-                val flagUrl = metaDataDataSource.observable.value?.get(currencyCode)?.flagUrl
-                val newEntity = CurrencyState(currencyCode, conversionRate, currencyName, flagUrl)
-                newMap[currencyCode] =  newEntity
+                val newEntity = CurrencyState(
+                    entity.key,
+                    entity.value.conversionRate,
+                    metaDataState?.get(entity.key)?.currencyName,
+                    metaDataState?.get(entity.key)?.flagUrl
+                )
+                newMap[entity.key] = newEntity
             }
 
-            currencyStates.value = newMap
+            if (newMap.isNotEmpty())
+                currencyStates.value = newMap
         }
     }
+
     private fun Map<String, *>.mapKeysToSet(): Set<String> {
         val set = mutableSetOf<String>()
         this.entries.forEach { set.add(it.key) }

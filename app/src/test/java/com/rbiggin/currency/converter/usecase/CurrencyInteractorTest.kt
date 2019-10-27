@@ -28,6 +28,7 @@ class CurrencyInteractorTest {
 
     private val metaDataObservable: TypedObservable<Map<String, CurrencyMetaDataEntity>> = mockk(relaxed = true)
     private val metaDataState: Map<String, CurrencyMetaDataEntity> = mockk()
+    private val metaDataEntity: CurrencyMetaDataEntity = mockk(relaxed = true)
 
     private val metaDataObserverSlot: CapturingSlot<TypedObserver<Map<String, CurrencyMetaDataEntity>>> = slot()
     private var metaDataObserver: TypedObserver<Map<String, CurrencyMetaDataEntity>>? = null
@@ -63,12 +64,14 @@ class CurrencyInteractorTest {
         every { conversionObservable.addTypedObserver(capture(conversionObserverSlot)) } answers {
             conversionObserver = conversionObserverSlot.captured
         }
+        every { conversionState.entries } returns mockk(relaxed = true)
 
         every { metaDataDatSource.observable } returns metaDataObservable
         every { metaDataObservable.value } returns metaDataState
         every { metaDataObservable.addTypedObserver(capture(metaDataObserverSlot)) } answers {
             metaDataObserver = metaDataObserverSlot.captured
         }
+        every { metaDataState[any()] } returns metaDataEntity
 
         useCase = CurrencyInteractor(metaDataDatSource, conversionDataSource)
     }
@@ -85,14 +88,12 @@ class CurrencyInteractorTest {
 
     @Test
     fun `when a conversion update received and update is empty expect no update`() {
-        assertNull(useCase.currencyStates.value)
         conversionObserver?.onUpdate(mapOf())
         assertNull(useCase.currencyStates.value)
     }
 
     @Test
     fun `when when conversion update received expect use case state to be updated`() {
-        assertNull(useCase.currencyStates.value)
         conversionObserver?.onUpdate(
             mapOf(
                 eurCurrencyCode to mockk(relaxed = true),
@@ -157,21 +158,6 @@ class CurrencyInteractorTest {
             )
         )
         verify { metaDataDatSource.getMetaData(setOf(eurCurrencyCode, jpyCurrencyCode, usdCurrencyCode)) }
-    }
-
-    @Test
-    fun `when update received from meta data data source expect data added to state`(){
-        conversionObserver?.onUpdate(
-            mapOf(
-                eurCurrencyCode to mockk(relaxed = true),
-                jpyCurrencyCode to mockk(relaxed = true),
-                usdCurrencyCode to mockk(relaxed = true)
-            )
-        )
-        val originalEuroState = useCase.currencyStates.value?.get(eurCurrencyCode)
-
-        metaDataObserver?.onUpdate(mapOf(eurCurrencyCode to mockk(relaxed = true)))
-        assertFalse(originalEuroState == useCase.currencyStates.value?.get(eurCurrencyCode))
     }
 
     @Test
