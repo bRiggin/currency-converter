@@ -31,7 +31,13 @@ class CurrencyAdapter(
     override fun onBindViewHolder(holder: CurrencyViewHolder, position: Int) {
         with(holder) {
             setLiveData(list[position])
-            view.setOnClickListener { listener.onItemClicked(adapterPosition) }
+            view.setOnClickListener {
+                listener.onItemClicked(
+                    adapterPosition,
+                    list[position].value?.value,
+                    list[position].value?.currencyCode
+                )
+            }
         }
     }
 
@@ -46,22 +52,21 @@ class CurrencyAdapter(
         fun setLiveData(data: LiveData<CurrencyModel>) {
             data.removeObservers(lifeCycleOwner)
             data.observe(lifeCycleOwner, Observer {
+                setAsTopView(it.isTop)
                 setCurrencyCode(it.currencyCode)
                 setValue(it.value, it.isTop)
                 setCurrencyName(it.currencyName)
                 setFlag(it.flagAssetUrl, activity)
-                setAsTopView(it.isTop)
             })
         }
 
         private fun setAsTopView(isTop: Boolean) {
-            with(view) {
-                viewSwitcher.displayedChild = if (isTop) {
-                    currencyValueEditText.addTextChangedListener(textWatcher)
-                    viewSwitcher.indexOfChild(currencyValueEditText)
+            with(view.currencyValueEditText) {
+                isEnabled = isTop
+                if (isTop) {
+                    addTextChangedListener(textWatcher)
                 } else {
-                    currencyValueEditText.removeTextChangedListener(textWatcher)
-                    viewSwitcher.indexOfChild(currencyValueTextView)
+                    removeTextChangedListener(textWatcher)
                 }
             }
         }
@@ -75,7 +80,6 @@ class CurrencyAdapter(
         }
 
         private fun setValue(newValue: Long, isTop: Boolean) {
-            view.currencyValueTextView.text = newValue.toString()
             if (!isTop || isTop && view.currencyValueEditText.text.toString().isBlank()) {
                 view.currencyValueEditText.setText(newValue.toString())
             }
@@ -85,7 +89,7 @@ class CurrencyAdapter(
             url?.let {
                 SvgLoader.pluck()
                     .with(activity)
-                    .setPlaceHolder(R.drawable.ic_flag_black_24dp, R.drawable.ic_flag_black_24dp)
+                    .setPlaceHolder(R.drawable.ic_flag_grey_24dp, R.drawable.ic_flag_grey_24dp)
                     .load(it, view.currencyFlag)
             }
         }
@@ -94,7 +98,8 @@ class CurrencyAdapter(
             override fun afterTextChanged(editable: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                listener.onNewInputValue(s?.toString()?.toLongOrNull() ?: 0)
+                if (view.currencyValueEditText.isEnabled)
+                    listener.onNewInputValue(s?.toString()?.toLongOrNull() ?: 0)
             }
         }
     }

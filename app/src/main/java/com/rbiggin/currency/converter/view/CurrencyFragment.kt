@@ -50,7 +50,10 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
                 }
             }
             is CurrencyConversionViewModel.UpdateType.NewTopItem ->
-                recyclerView.adapter?.notifyItemMoved(update.fromIndex, 0)
+                recyclerView.apply {
+                    adapter?.notifyItemMoved(update.fromIndex, 0)
+                    scrollToPosition(0)
+                }
             CurrencyConversionViewModel.UpdateType.InitialUpdate ->
                 recyclerView.adapter =
                     CurrencyAdapter(activity as Activity, viewModel.conversionList, viewLifecycleOwner, this)
@@ -60,10 +63,11 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
     }
 
     override fun onNewInputValue(input: Long) {
-        viewModel.inputValue = input
+        viewModel.setInputValue(input)
     }
 
-    override fun onItemClicked(index: Int) {
-        viewModel.onItemTouched(index)
+    override fun onItemClicked(index: Int, currentValue: Long?, currencyCode: String?) {
+        if (currencyCode != null && currentValue != null)
+            viewModel.onItemTouched(index, currentValue, currencyCode)
     }
 }

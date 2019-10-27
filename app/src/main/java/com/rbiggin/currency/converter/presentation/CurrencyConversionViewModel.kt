@@ -1,5 +1,6 @@
 package com.rbiggin.currency.converter.presentation
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,17 +14,7 @@ class CurrencyConversionViewModel(
     private val mapper: ViewModelMapper = ViewModelMapper
 ) : ViewModel() {
 
-    private var currentCurrencyCode = "EUR"
-        set(value) {
-            field = value
-            updateStateList(currencyUseCase.currencyStates.value)
-        }
-
-    var inputValue: Long = EUROPEAN_DEFAULT_AMOUNT
-        set(value) {
-            field = value
-            updateStateList(currencyUseCase.currencyStates.value)
-        }
+    private var inputValue: Long = EUROPEAN_DEFAULT_AMOUNT
 
     private val mutableUpdate = MutableLiveData<UpdateType>()
     val listUpdates: LiveData<UpdateType>
@@ -35,12 +26,42 @@ class CurrencyConversionViewModel(
 
     private val observer = object : TypedObserver<Map<String, CurrencyState>> {
         override fun onUpdate(value: Map<String, CurrencyState>) {
+            Log.i("----FROM OBSERVER----", "Calling update list. Value: $inputValue")
             updateStateList(value)
         }
     }
 
     init {
         currencyUseCase.currencyStates.addTypedObserver(observer)
+    }
+
+    fun onItemTouched(index: Int, value: Long, currencyCode: String) {
+        if (index != 0 && index in 0 until conversionList.size) {
+            disabledTopItemInput()
+            val element = mutableList[index]
+            with(mutableList) {
+                remove(element)
+                add(0, element)
+            }
+            currencyUseCase.setCurrencyCode(currencyCode)
+            setInputValue(value, true)
+            mutableUpdate.value = UpdateType.NewTopItem(index)
+        }
+    }
+
+    fun setInputValue(newValue: Long, isNewTopItem: Boolean = false) {
+        inputValue = newValue
+        if (!isNewTopItem) {
+            Log.i("--FROM INPUT AMOUNT--", "Calling update list. Value: $inputValue")
+            updateStateList(currencyUseCase.currencyStates.value)
+        }
+    }
+
+    private fun disabledTopItemInput(){
+        val topItem = mutableList[0].value
+        topItem?.let {
+            mutableList[0].postValue(topItem.copy(isTop = false))
+        }
     }
 
     private fun updateStateList(map: Map<String, CurrencyState>?) {
@@ -80,19 +101,6 @@ class CurrencyConversionViewModel(
         mutableList.add(liveData)
     }
 
-    fun onItemTouched(index: Int) {
-        if (index != 0 && index in 0 until conversionList.size) {
-            val element = mutableList[index]
-            with(mutableList) {
-                remove(element)
-                add(0, element)
-            }
-            currentCurrencyCode = element.value?.currencyCode ?: EUROPEAN_CURRENCY_CODE
-            inputValue = element.value?.value ?: EUROPEAN_DEFAULT_AMOUNT
-            mutableUpdate.value = UpdateType.NewTopItem(index)
-        }
-    }
-
     sealed class UpdateType {
         object InitialUpdate : UpdateType()
         object Pop : UpdateType()
@@ -107,7 +115,6 @@ class CurrencyConversionViewModel(
     data class NewItems(val insertIndex: Int, val numberOfItems: Int)
 
     companion object {
-        private const val EUROPEAN_CURRENCY_CODE = "EUR"
         private const val EUROPEAN_DEFAULT_AMOUNT = 1000L
     }
 }

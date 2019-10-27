@@ -10,7 +10,7 @@ import com.rbiggin.currency.converter.utils.TypedObserver
 
 class CurrencyInteractor(
     private val metaDataDataSource: MetaDataDataSource,
-    conversionDataSource: CurrencyConversionDataSource
+    private val conversionDataSource: CurrencyConversionDataSource
 ) : CurrencyUseCase {
 
     override val currencyStates: TypedObservable<Map<String, CurrencyState>> = TypedObservable()
@@ -33,6 +33,10 @@ class CurrencyInteractor(
     init {
         conversionDataSource.observable.addTypedObserver(conversionObserver)
 //        metaDataDataSource.observable.addTypedObserver(metaDataObserver)
+    }
+
+    override fun setCurrencyCode(code: String) {
+        conversionDataSource.setCurrencyCode(code)
     }
 
     private fun newFunciton(entities: Map<String, CurrencyConversionEntity>) {
