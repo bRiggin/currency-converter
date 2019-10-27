@@ -2,7 +2,6 @@ package com.rbiggin.currency.converter.view
 
 import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -31,8 +30,6 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
 
         viewModel.listUpdates.observe(viewLifecycleOwner, Observer {
             updateList(it)
-            Log.i("TAG", "List: ${viewModel.conversionList}")
-            Log.d("TAG", "Update: $it")
         })
     }
 

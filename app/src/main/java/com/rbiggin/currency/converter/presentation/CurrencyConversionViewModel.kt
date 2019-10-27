@@ -57,7 +57,7 @@ class CurrencyConversionViewModel(
         }
     }
 
-    private fun disabledTopItemInput(){
+    private fun disabledTopItemInput() {
         val topItem = mutableList[0].value
         topItem?.let {
             mutableList[0].postValue(topItem.copy(isTop = false))

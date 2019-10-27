@@ -55,7 +55,7 @@ class MetaDataRepository(
         if (!currencyPending && currenciesQueue.isNotEmpty()) requestCurrency(currenciesQueue.first())
     }
 
-    private fun requestCurrency(code: String){
+    private fun requestCurrency(code: String) {
         currencyPending = true
         currenciesQueue.remove(code)
         api.getMetaData(code)

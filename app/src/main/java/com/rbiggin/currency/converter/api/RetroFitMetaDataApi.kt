@@ -18,7 +18,7 @@ class RetroFitMetaDataApi(
         error: ((String, Int?) -> Unit)?
     ) {
         createNewClient().getMetaData(currencyCode).apply {
-            enqueue(object : Callback<Set<RetrofitMetaDataNetworkDto>>{
+            enqueue(object : Callback<Set<RetrofitMetaDataNetworkDto>> {
                 override fun onFailure(call: Call<Set<RetrofitMetaDataNetworkDto>>?, t: Throwable?) {
                 }
 
@@ -36,8 +36,8 @@ class RetroFitMetaDataApi(
 
 
     private fun createNewClient() = retroFitBuilder
-            .baseUrl(CurrencyMetaDataService.BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(RetrofitMetaDataClient::class.java)
+        .baseUrl(CurrencyMetaDataService.BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(RetrofitMetaDataClient::class.java)
 }
