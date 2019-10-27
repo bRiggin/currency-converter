@@ -16,27 +16,26 @@ class CurrencyConversionViewModel(
     private var currentCurrencyCode = "EUR"
         set(value) {
             field = value
-            newFunctionMapToList(currencyUseCase.currencyStates.value ?: mapOf())
+            updateStateList(currencyUseCase.currencyStates.value)
         }
 
-    var inputValue: Int = 100
+    var inputValue: Long = EUROPEAN_DEFAULT_AMOUNT
         set(value) {
             field = value
-            newFunctionMapToList(currencyUseCase.currencyStates.value ?: mapOf())
+            updateStateList(currencyUseCase.currencyStates.value)
         }
 
     private val mutableUpdate = MutableLiveData<UpdateType>()
     val listUpdates: LiveData<UpdateType>
         get() = mutableUpdate
 
-    private var mutableList: MutableList<CurrencyModel> = mutableListOf()
-    val conversionList: List<CurrencyModel>
+    private var mutableList: MutableList<MutableLiveData<CurrencyModel>> = mutableListOf()
+    val conversionList: List<LiveData<CurrencyModel>>
         get() = mutableList
 
     private val observer = object : TypedObserver<Map<String, CurrencyState>> {
         override fun onUpdate(value: Map<String, CurrencyState>) {
-//            handleConversionUpdate(value)
-            newFunctionMapToList(value)
+            updateStateList(value)
         }
     }
 
@@ -44,37 +43,42 @@ class CurrencyConversionViewModel(
         currencyUseCase.currencyStates.addTypedObserver(observer)
     }
 
-    @Synchronized private fun newFunctionMapToList(map: Map<String, CurrencyState>) {
-        val newList = mutableListOf<CurrencyModel>()
+    private fun updateStateList(map: Map<String, CurrencyState>?) {
+        val isFirstTime = mutableList.isEmpty()
 
-        map.entries.forEachIndexed { index, entry ->
-            val code = entry.key
-            val conversion = entry.value.conversionRate
-            val value = entry.value.subjectCurrencyToTarget(inputValue)
-            val name = entry.value.currencyName
-            val url = entry.value.flagAssetUrl
-            newList.add(index, CurrencyModel(code, conversion, value, name, url))
-        }
-
-        newList.find { it.currencyCode == currentCurrencyCode }?.let {
-            newList.apply {
-                remove(it)
-                add(0, it)
+        map?.entries?.forEach { entry ->
+            mutableList.find { it.value?.currencyCode == entry.key }?.let {
+                updateListItem(it, entry.value)
+            } ?: run {
+                addNewListItem(entry.value)
             }
         }
 
-        newList.forEachIndexed { index, currencyModel ->
-            if (mutableList.elementAtOrNull(index) != null) {
-                mutableList[index] = currencyModel
-            } else {
-                mutableList.add(index, currencyModel)
-            }
-
-        }
-
-        mutableUpdate.value = if (mutableUpdate.value == null) UpdateType.InitialUpdate else UpdateType.Pop
+        if (isFirstTime) mutableUpdate.postValue(UpdateType.InitialUpdate)
     }
 
+    private fun updateListItem(
+        currentLiveData: MutableLiveData<CurrencyModel>,
+        newMapEntry: CurrencyState
+    ) {
+        val isTop = mutableList.indexOf(currentLiveData) == 0
+        val newModel = mapper.stateToModel(inputValue, newMapEntry).copy(isTop = isTop)
+        currentLiveData.postValue(newModel)
+    }
+
+    private fun addNewListItem(
+        newMapEntry: CurrencyState
+    ) {
+        val isFirstItem = mutableList.isEmpty()
+        var newModel = mapper.stateToModel(inputValue, newMapEntry)
+
+        if (isFirstItem) newModel = newModel.copy(isTop = true)
+
+        val liveData = MutableLiveData<CurrencyModel>().apply {
+            postValue(newModel)
+        }
+        mutableList.add(liveData)
+    }
 
     fun onItemTouched(index: Int) {
         if (index != 0 && index in 0 until conversionList.size) {
@@ -83,95 +87,9 @@ class CurrencyConversionViewModel(
                 remove(element)
                 add(0, element)
             }
-            currentCurrencyCode = element.currencyCode
+            currentCurrencyCode = element.value?.currencyCode ?: EUROPEAN_CURRENCY_CODE
+            inputValue = element.value?.value ?: EUROPEAN_DEFAULT_AMOUNT
             mutableUpdate.value = UpdateType.NewTopItem(index)
-        }
-    }
-
-    private fun handleNewInputValue() {
-        val valueInEuros = mutableList[0].subjectCurrencyToTarget(inputValue.toDouble())
-        val updatedIndexes = mutableListOf<Int>()
-        val updatedItems = mutableMapOf<Int, CurrencyModel>()
-
-        mutableList.forEachIndexed { index, currencyModel ->
-            if (index != 0) {
-                val newValue = currencyModel.targetToSubjectCurrency(valueInEuros.toDouble())
-                val newModel = currencyModel.copy(value = newValue)
-                updatedItems[index] = newModel
-                updatedIndexes.add(index)
-            }
-        }
-        updateList(updatedItems)
-        publishItemsUpdate(updatedIndexes)
-    }
-
-    private fun updateList(itemsToUpdate: Map<Int, CurrencyModel>) {
-        itemsToUpdate.entries.forEach {
-            with(mutableList) {
-                removeAt(it.key)
-                add(it.key, it.value)
-            }
-        }
-    }
-
-    private fun handleConversionUpdate(update: Map<String, CurrencyState>) {
-        if (mutableList.isEmpty()) {
-            initialiseList(update)
-        } else {
-            updateListFromConversionUpdate(update)
-        }
-    }
-
-    private fun initialiseList(update: Map<String, CurrencyState>) {
-        val list = mutableListOf<CurrencyModel>()
-
-        update.entries.forEach {
-            val model = mapper.stateToModel(inputValue, it.value)
-            if (it.key == EUROPEAN_CURRENCY_CODE) {
-                list.add(0, model)
-            } else {
-                list.add(model)
-            }
-        }
-
-        mutableList = list
-        mutableUpdate.value = UpdateType.InitialUpdate
-    }
-
-    private fun updateListFromConversionUpdate(update: Map<String, CurrencyState>) {
-        val updatedIndexes = mutableListOf<Int>()
-        var numberOfNewItems = 0
-
-        update.entries.forEach { updateEntry ->
-            val currentElement = mutableList.find { it.currencyCode == updateEntry.key }
-            val newElement = mapper.stateToModel(inputValue, updateEntry.value)
-
-            if (currentElement != null && currentElement.value != newElement.value) {
-                val index = mutableList.indexOf(currentElement)
-                mutableList[index] = newElement
-                updatedIndexes.add(index)
-            } else if (currentElement == null) {
-                mutableList.add(newElement)
-                numberOfNewItems++
-            }
-        }
-
-        publishItemsUpdate(updatedIndexes, numberOfNewItems)
-    }
-
-    private fun publishItemsUpdate(
-        updatedIndexes: MutableList<Int>,
-        numberOfNewItems: Int = 0
-    ) {
-        val newItemUpdate = when {
-            numberOfNewItems != 0 -> NewItems(mutableList.size - numberOfNewItems, numberOfNewItems)
-            else -> null
-        }
-
-        val update = UpdateType.ItemsUpdate(updatedIndexes, newItemUpdate)
-
-        if (update.indexesChanged.isNotEmpty() || update.newItems != null) {
-            mutableUpdate.value = update
         }
     }
 
@@ -190,5 +108,6 @@ class CurrencyConversionViewModel(
 
     companion object {
         private const val EUROPEAN_CURRENCY_CODE = "EUR"
+        private const val EUROPEAN_DEFAULT_AMOUNT = 1000L
     }
 }

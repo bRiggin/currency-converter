@@ -20,14 +20,13 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList,
-            { viewModel.inputValue = it },
-            { viewModel.onItemTouched(it)})
+        recyclerView.adapter =
+            CurrencyAdapter(activity as Activity, viewModel.conversionList, viewLifecycleOwner, this)
 
         with(recyclerView) {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             setHasFixedSize(true)
-            setItemViewCacheSize(20)
+            setItemViewCacheSize(40)
         }
 
         viewModel.listUpdates.observe(viewLifecycleOwner, Observer {
@@ -53,19 +52,18 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
             is CurrencyConversionViewModel.UpdateType.NewTopItem ->
                 recyclerView.adapter?.notifyItemMoved(update.fromIndex, 0)
             CurrencyConversionViewModel.UpdateType.InitialUpdate ->
-                recyclerView.adapter = CurrencyAdapter(activity as Activity, viewModel.conversionList,
-                    { viewModel.inputValue = it },
-                    { viewModel.onItemTouched(it)})
+                recyclerView.adapter =
+                    CurrencyAdapter(activity as Activity, viewModel.conversionList, viewLifecycleOwner, this)
             CurrencyConversionViewModel.UpdateType.Pop ->
                 recyclerView.adapter?.notifyDataSetChanged()
         }
     }
 
-    override fun onNewInputValue(input: Int) {
+    override fun onNewInputValue(input: Long) {
         viewModel.inputValue = input
     }
 
     override fun onItemClicked(index: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        viewModel.onItemTouched(index)
     }
 }
