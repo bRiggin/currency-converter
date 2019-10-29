@@ -48,17 +48,16 @@ class CurrencyAdapter(
         private var liveData: LiveData<CurrencyModel>? = null
 
         private val observer: Observer<CurrencyModel> = Observer {
-                setAsTopView(it.isTop)
-                setCurrencyCode(it.currencyCode)
-                setValue(it.value, it.isTop)
-                setCurrencyName(it.currencyName)
-                setFlag(it.flagAssetUrl, activity)
+            setAsTopView(it.isTop)
+            setCurrencyCode(it.currencyCode)
+            setValue(it.value, it.isTop)
+            setCurrencyName(it.currencyName)
+            setFlag(it.flagAssetUrl, activity)
         }
 
         fun setLiveData(data: LiveData<CurrencyModel>) {
             liveData?.removeObserver(observer)
             liveData = data
-            data.removeObservers(lifeCycleOwner)
             data.observe(lifeCycleOwner, observer)
         }
 
@@ -82,8 +81,14 @@ class CurrencyAdapter(
         }
 
         private fun setValue(newValue: Long, isTop: Boolean) {
-            if (!isTop || isTop && view.currencyValueEditText.text.toString().isBlank()) {
-                view.currencyValueEditText.setText(newValue.toString())
+            with(view.currencyValueEditText) {
+                when {
+                    isTop && !hasFocus() -> {
+                        textWatcher.programmaticChangeExpected = true
+                        setText(newValue.toString())
+                    }
+                    !isTop -> setText(newValue.toString())
+                }
             }
         }
 
@@ -93,16 +98,23 @@ class CurrencyAdapter(
                     .with(activity)
                     .setPlaceHolder(R.drawable.ic_flag_grey_24dp, R.drawable.ic_flag_grey_24dp)
                     .load(it, view.currencyFlag)
+            } ?: run {
+                view.currencyFlag.setImageResource(R.drawable.ic_flag_grey_24dp)
             }
         }
 
         inner class GenericTextWatcher : TextWatcher {
-            override fun afterTextChanged(editable: Editable?) {}
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (view.currencyValueEditText.isEnabled)
-                    listener.onNewInputValue(s?.toString()?.toLongOrNull() ?: 0)
+            var programmaticChangeExpected = false
+
+            override fun afterTextChanged(editable: Editable?) {
+                if (view.currencyValueEditText.isEnabled && !programmaticChangeExpected) {
+                    programmaticChangeExpected = false
+                    listener.onNewInputValue(editable?.toString()?.toLongOrNull() ?: 0)
+                }
             }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
     }
 
