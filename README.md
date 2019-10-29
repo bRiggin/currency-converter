@@ -33,7 +33,7 @@ To control both meta data and conversion data sources and to combine their state
 Store and distribute the current state of the known conversion rates.
 
 ### ConversionController
-Aware of specific API and aims to control network calls and to automatically control refresh rate. Also hands results to data source.
+Aware of specific API and aims to control network calls and to automatically control refresh rate. Also handles results to data source.
 
 ### ConversionNetworkApi
 Tied to specific implementation of networking and to perform network calls.
