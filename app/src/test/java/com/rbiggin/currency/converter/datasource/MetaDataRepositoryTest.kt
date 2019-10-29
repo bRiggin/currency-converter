@@ -1,6 +1,9 @@
 package com.rbiggin.currency.converter.datasource
 
-import com.rbiggin.currency.converter.api.MetaDataApi
+import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataController
+import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataMapper
+import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataDataSource
+import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataRepository
 import com.rbiggin.currency.converter.model.MetaDataDto
 import io.mockk.every
 import io.mockk.mockk
@@ -11,8 +14,8 @@ import org.junit.Test
 
 class MetaDataRepositoryTest {
 
-    private val api: MetaDataApi = mockk(relaxed = true)
-    private val mapper: CurrencyMetaDataMapper = mockk(relaxed = true)
+    private val controller: MetaDataController = mockk(relaxed = true)
+    private val mapper: MetaDataMapper = mockk(relaxed = true)
 
     private lateinit var repository: MetaDataDataSource
 
@@ -25,25 +28,28 @@ class MetaDataRepositoryTest {
 
     @Before
     fun `configure meta data repository`() {
-        every { api.setUpdateListener(captureLambda()) } answers {
+        every { controller.setUpdateListener(captureLambda()) } answers {
             updateListener = lambda<(MetaDataDto) -> Unit>().captured
         }
 
-        every { api.setErrorListener(captureLambda()) } answers {
+        every { controller.setErrorListener(captureLambda()) } answers {
             errorListener = lambda<(String, Int?) -> Unit>().captured
         }
 
-        repository = MetaDataRepository(api, mapper)
+        repository = MetaDataRepository(
+            controller,
+            mapper
+        )
     }
 
     @Test
     fun `when initialised expect repository to listen for updates from api`() {
-        verify { api.setUpdateListener(any()) }
+        verify { controller.setUpdateListener(any()) }
     }
 
     @Test
     fun `when initialised expect repository to listen for errors from api`() {
-        verify { api.setErrorListener(any()) }
+        verify { controller.setErrorListener(any()) }
     }
 
     @Test
@@ -55,7 +61,7 @@ class MetaDataRepositoryTest {
         )
         repository.getMetaData(setOf(eurCurrencyCode, jpyCurrencyCode, usdCurrencyCode))
 
-        verify(exactly = 0) { api.getMetaData(any()) }
+        verify(exactly = 0) { controller.getMetaData(any()) }
     }
 
     @Test
@@ -66,18 +72,18 @@ class MetaDataRepositoryTest {
         )
         repository.getMetaData(setOf(eurCurrencyCode, jpyCurrencyCode, usdCurrencyCode))
 
-        verify { api.getMetaData(usdCurrencyCode) }
+        verify { controller.getMetaData(usdCurrencyCode) }
     }
 
     @Test
     fun `when multiple new currencies are request and one is returned from api expect another api call`() {
         repository.getMetaData(setOf(eurCurrencyCode, jpyCurrencyCode))
 
-        verify(exactly = 1) { api.getMetaData(any()) }
+        verify(exactly = 1) { controller.getMetaData(any()) }
 
         updateListener?.invoke(mockk())
 
-        verify(exactly = 2) { api.getMetaData(any()) }
+        verify(exactly = 2) { controller.getMetaData(any()) }
     }
 
     @Test
@@ -100,14 +106,14 @@ class MetaDataRepositoryTest {
         repository.getMetaData(setOf(eurCurrencyCode, jpyCurrencyCode))
         updateListener?.invoke(mockk())
         updateListener?.invoke(mockk())
-        verify(exactly = 2) { api.getMetaData(any()) }
+        verify(exactly = 2) { controller.getMetaData(any()) }
     }
 
     @Test
     fun `when api fails to get meta data expect next currency code to be requested`() {
         repository.getMetaData(setOf(eurCurrencyCode, jpyCurrencyCode))
         errorListener?.invoke(eurCurrencyCode, null)
-        verify(exactly = 2) { api.getMetaData(any()) }
+        verify(exactly = 2) { controller.getMetaData(any()) }
     }
 
     @Test
@@ -115,6 +121,6 @@ class MetaDataRepositoryTest {
         repository.getMetaData(setOf(eurCurrencyCode, jpyCurrencyCode))
         errorListener?.invoke(eurCurrencyCode, null)
         errorListener?.invoke(jpyCurrencyCode, null)
-        verify(exactly = 2) { api.getMetaData(any()) }
+        verify(exactly = 2) { controller.getMetaData(any()) }
     }
 }

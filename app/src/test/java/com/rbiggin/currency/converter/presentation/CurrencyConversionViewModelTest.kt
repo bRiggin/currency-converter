@@ -18,7 +18,7 @@
 //
 //    private val useCase: CurrencyUseCase = mockk()
 //
-//    private lateinit var viewModel: CurrencyConversionViewModel
+//    private lateinit var viewModel: CurrencyViewModel
 //
 //    private val observable: TypedObservable<Map<String, CurrencyState>> = mockk()
 //
@@ -40,7 +40,7 @@
 //        every { useCase.currencyStates } returns observable
 //        every { observable.addTypedObserver(capture(observerSlot)) } just Runs
 //
-//        viewModel = CurrencyConversionViewModel(useCase)
+//        viewModel = CurrencyViewModel(useCase)
 //    }
 //
 //    @Test
@@ -51,7 +51,7 @@
 //    @Test
 //    fun `when first conversion update is received expect update live data to be populated`() {
 //        observerSlot.captured.onUpdate(mockk(relaxed = true))
-//        assertEquals(CurrencyConversionViewModel.UpdateType.InitialUpdate, viewModel.listUpdates.value)
+//        assertEquals(CurrencyViewModel.UpdateType.InitialUpdate, viewModel.listUpdates.value)
 //    }
 //
 //    @Test
@@ -101,10 +101,10 @@
 //            onUpdate(update)
 //        }
 //
-//        val itemUpdates = viewModel.listUpdates.value as? CurrencyConversionViewModel.UpdateType.ItemsUpdate
+//        val itemUpdates = viewModel.listUpdates.value as? CurrencyViewModel.UpdateType.ItemsUpdate
 //
 //        assertEquals(
-//            CurrencyConversionViewModel.NewItems(defaultUpdate.size, 1),
+//            CurrencyViewModel.NewItems(defaultUpdate.size, 1),
 //            itemUpdates?.newItems
 //        )
 //    }
@@ -132,10 +132,10 @@
 //        }
 //        observerSlot.captured.onUpdate(update)
 //
-//        val itemUpdates = viewModel.listUpdates.value as? CurrencyConversionViewModel.UpdateType.ItemsUpdate
+//        val itemUpdates = viewModel.listUpdates.value as? CurrencyViewModel.UpdateType.ItemsUpdate
 //
 //        assertEquals(
-//            CurrencyConversionViewModel.NewItems(defaultUpdate.size, 3),
+//            CurrencyViewModel.NewItems(defaultUpdate.size, 3),
 //            itemUpdates?.newItems
 //        )
 //    }
@@ -155,7 +155,7 @@
 //        observerSlot.captured.onUpdate(update)
 //
 //        assertEquals(
-//            CurrencyConversionViewModel.UpdateType.ItemsUpdate(listOf(testIndex)),
+//            CurrencyViewModel.UpdateType.ItemsUpdate(listOf(testIndex)),
 //            viewModel.listUpdates.value
 //        )
 //    }
@@ -210,7 +210,7 @@
 //
 //        viewModel.onItemTouched(2)
 //        assertEquals(
-//            CurrencyConversionViewModel.UpdateType.NewTopItem(2),
+//            CurrencyViewModel.UpdateType.NewTopItem(2),
 //            viewModel.listUpdates.value
 //        )
 //    }
@@ -236,7 +236,7 @@
 //        viewModel.inputValue = 49
 //
 //        assertEquals(
-//            CurrencyConversionViewModel.UpdateType.ItemsUpdate(listOf(1, 2)),
+//            CurrencyViewModel.UpdateType.ItemsUpdate(listOf(1, 2)),
 //            viewModel.listUpdates.value
 //        )
 //    }

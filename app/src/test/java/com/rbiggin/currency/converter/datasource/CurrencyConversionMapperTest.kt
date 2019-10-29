@@ -1,6 +1,7 @@
 package com.rbiggin.currency.converter.datasource
 
-import com.rbiggin.currency.converter.model.CurrencyDto
+import com.rbiggin.currency.converter.feature.conversion.entity.ConversionMapper
+import com.rbiggin.currency.converter.model.ConversionDto
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -8,7 +9,7 @@ import org.junit.Test
 
 class CurrencyConversionMapperTest {
 
-    private val dtoObject: CurrencyDto = mockk(relaxed = true)
+    private val dtoObject: ConversionDto = mockk(relaxed = true)
 
     @Test
     fun `when dto object mapped to entity expect native currency code to match`() {
@@ -16,7 +17,7 @@ class CurrencyConversionMapperTest {
         every { dtoObject.nativeCode } returns nativeCurrencyCode
 
         assertEquals(nativeCurrencyCode,
-            CurrencyConversionMapper.convertDtoToEntity(dtoObject).subjectCode)
+            ConversionMapper.convertDtoToEntity(dtoObject).subjectCode)
     }
 
     @Test
@@ -25,7 +26,7 @@ class CurrencyConversionMapperTest {
         every { dtoObject.foreignCode } returns foreignCurrencyCode
 
         assertEquals(foreignCurrencyCode,
-            CurrencyConversionMapper.convertDtoToEntity(dtoObject).targetCode)
+            ConversionMapper.convertDtoToEntity(dtoObject).targetCode)
     }
 
     @Test
@@ -34,6 +35,6 @@ class CurrencyConversionMapperTest {
         every { dtoObject.conversionRate } returns conversionRate
 
         assertEquals(conversionRate,
-            CurrencyConversionMapper.convertDtoToEntity(dtoObject).conversionRate, 0.0)
+            ConversionMapper.convertDtoToEntity(dtoObject).conversionRate, 0.0)
     }
 }

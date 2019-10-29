@@ -1,31 +1,31 @@
 package com.rbiggin.currency.converter.usecase
 
-import com.rbiggin.currency.converter.datasource.CurrencyConversionDataSource
-import com.rbiggin.currency.converter.datasource.MetaDataDataSource
-import com.rbiggin.currency.converter.model.CurrencyConversionEntity
-import com.rbiggin.currency.converter.model.CurrencyMetaDataEntity
+import com.rbiggin.currency.converter.feature.conversion.entity.ConversionDataSource
+import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataDataSource
+import com.rbiggin.currency.converter.model.ConversionEntity
+import com.rbiggin.currency.converter.model.MetaDataEntity
 import com.rbiggin.currency.converter.model.CurrencyState
 import com.rbiggin.currency.converter.utils.TypedObservable
 import com.rbiggin.currency.converter.utils.TypedObserver
 
 class CurrencyInteractor(
     private val metaDataDataSource: MetaDataDataSource,
-    private val conversionDataSource: CurrencyConversionDataSource
+    private val conversionDataSource: ConversionDataSource
 ) : CurrencyUseCase {
 
     override val currencyStates: TypedObservable<Map<String, CurrencyState>> = TypedObservable()
 
-    private val metaDataState: Map<String, CurrencyMetaDataEntity>?
+    private val metaDataState: Map<String, MetaDataEntity>?
         get() = metaDataDataSource.observable.value
 
-    private var conversionObserver = object : TypedObserver<Map<String, CurrencyConversionEntity>> {
-        override fun onUpdate(value: Map<String, CurrencyConversionEntity>) {
+    private var conversionObserver = object : TypedObserver<Map<String, ConversionEntity>> {
+        override fun onUpdate(value: Map<String, ConversionEntity>) {
             updateCurrencyStates(value)
         }
     }
 
-    private var metaDataObserver = object : TypedObserver<Map<String, CurrencyMetaDataEntity>> {
-        override fun onUpdate(value: Map<String, CurrencyMetaDataEntity>) {
+    private var metaDataObserver = object : TypedObserver<Map<String, MetaDataEntity>> {
+        override fun onUpdate(value: Map<String, MetaDataEntity>) {
             updateCurrencyStates(conversionDataSource.observable.value)
         }
     }
@@ -39,7 +39,7 @@ class CurrencyInteractor(
         conversionDataSource.setCurrencyCode(code)
     }
 
-    private fun updateCurrencyStates(entities: Map<String, CurrencyConversionEntity>?) {
+    private fun updateCurrencyStates(entities: Map<String, ConversionEntity>?) {
         entities?.let {
             metaDataDataSource.getMetaData(entities.mapKeysToSet())
 

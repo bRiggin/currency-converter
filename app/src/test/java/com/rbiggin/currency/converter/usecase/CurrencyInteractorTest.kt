@@ -1,9 +1,9 @@
 package com.rbiggin.currency.converter.usecase
 
-import com.rbiggin.currency.converter.datasource.CurrencyConversionDataSource
-import com.rbiggin.currency.converter.datasource.MetaDataDataSource
-import com.rbiggin.currency.converter.model.CurrencyConversionEntity
-import com.rbiggin.currency.converter.model.CurrencyMetaDataEntity
+import com.rbiggin.currency.converter.feature.conversion.entity.ConversionDataSource
+import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataDataSource
+import com.rbiggin.currency.converter.model.ConversionEntity
+import com.rbiggin.currency.converter.model.MetaDataEntity
 import com.rbiggin.currency.converter.model.CurrencyState
 import com.rbiggin.currency.converter.utils.TypedObservable
 import com.rbiggin.currency.converter.utils.TypedObserver
@@ -15,23 +15,23 @@ import org.junit.Test
 
 class CurrencyInteractorTest {
 
-    private val conversionDataSource: CurrencyConversionDataSource = mockk()
+    private val conversionDataSource: ConversionDataSource = mockk()
     private val metaDataDatSource: MetaDataDataSource = mockk(relaxed = true)
 
     private lateinit var useCase: CurrencyUseCase
 
-    private val conversionObservable: TypedObservable<Map<String, CurrencyConversionEntity>> = mockk(relaxed = true)
-    private val conversionState: Map<String, CurrencyConversionEntity> = mockk()
+    private val conversionObservable: TypedObservable<Map<String, ConversionEntity>> = mockk(relaxed = true)
+    private val conversionState: Map<String, ConversionEntity> = mockk()
 
-    private val conversionObserverSlot: CapturingSlot<TypedObserver<Map<String, CurrencyConversionEntity>>> = slot()
-    private var conversionObserver: TypedObserver<Map<String, CurrencyConversionEntity>>? = null
+    private val conversionObserverSlot: CapturingSlot<TypedObserver<Map<String, ConversionEntity>>> = slot()
+    private var conversionObserver: TypedObserver<Map<String, ConversionEntity>>? = null
 
-    private val metaDataObservable: TypedObservable<Map<String, CurrencyMetaDataEntity>> = mockk(relaxed = true)
-    private val metaDataState: Map<String, CurrencyMetaDataEntity> = mockk()
-    private val metaDataEntity: CurrencyMetaDataEntity = mockk(relaxed = true)
+    private val metaDataObservable: TypedObservable<Map<String, MetaDataEntity>> = mockk(relaxed = true)
+    private val metaDataState: Map<String, MetaDataEntity> = mockk()
+    private val metaDataEntity: MetaDataEntity = mockk(relaxed = true)
 
-    private val metaDataObserverSlot: CapturingSlot<TypedObserver<Map<String, CurrencyMetaDataEntity>>> = slot()
-    private var metaDataObserver: TypedObserver<Map<String, CurrencyMetaDataEntity>>? = null
+    private val metaDataObserverSlot: CapturingSlot<TypedObserver<Map<String, MetaDataEntity>>> = slot()
+    private var metaDataObserver: TypedObserver<Map<String, MetaDataEntity>>? = null
 
     private val cadCurrencyCode: String = "CAD"
 
@@ -124,7 +124,7 @@ class CurrencyInteractorTest {
         val newConversionRate = eurCurrencyConversionRate + 1.0
         useCase.currencyStates.value = defaultUseCaseState
 
-        val updateMap = mapOf<String, CurrencyConversionEntity>(
+        val updateMap = mapOf<String, ConversionEntity>(
             eurCurrencyCode to mockk(relaxed = true) {
                 every { conversionRate } returns newConversionRate
             },
@@ -162,7 +162,7 @@ class CurrencyInteractorTest {
 
     @Test
     fun `when update received from meta data data source and data has not changed expect no update`(){
-        val eurMetaData = mockk<CurrencyMetaDataEntity>{
+        val eurMetaData = mockk<MetaDataEntity>{
             every { currencyCode } returns eurCurrencyCode
             every { currencyName } returns "Euro"
             every { flagUrl } returns "Mock URL"

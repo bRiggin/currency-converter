@@ -1,8 +1,11 @@
 package com.rbiggin.currency.converter.datasource
 
-import com.rbiggin.currency.converter.api.CurrencyConversionApi
-import com.rbiggin.currency.converter.model.CurrencyDto
-import com.rbiggin.currency.converter.model.CurrencyConversionEntity
+import com.rbiggin.currency.converter.feature.conversion.entity.ConversionController
+import com.rbiggin.currency.converter.feature.conversion.entity.ConversionDataSource
+import com.rbiggin.currency.converter.feature.conversion.entity.ConversionMapper
+import com.rbiggin.currency.converter.feature.conversion.entity.ConversionRepository
+import com.rbiggin.currency.converter.model.ConversionDto
+import com.rbiggin.currency.converter.model.ConversionEntity
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -12,35 +15,38 @@ import org.junit.Test
 
 class CurrencyConverterRepositoryTest {
 
-    private val api: CurrencyConversionApi = mockk(relaxed = true)
-    private val mapper: CurrencyConversionMapper = mockk(relaxed = true)
+    private val controller: ConversionController = mockk(relaxed = true)
+    private val mapper: ConversionMapper = mockk(relaxed = true)
 
-    private lateinit var repository: CurrencyConversionDataSource
+    private lateinit var repository: ConversionDataSource
 
-    private var updateListener: ((Set<CurrencyDto>) -> Unit)? = null
+    private var updateListener: ((Set<ConversionDto>) -> Unit)? = null
 
     @Before
     fun `configure currency converter repository`() {
-        every { api.setUpdateListener(captureLambda()) } answers {
-            updateListener = lambda<((Set<CurrencyDto>) -> Unit)>().captured
+        every { controller.setUpdateListener(captureLambda()) } answers {
+            updateListener = lambda<((Set<ConversionDto>) -> Unit)>().captured
         }
 
-        repository = CurrencyConversionRepository(api, mapper)
+        repository = ConversionRepository(
+            controller,
+            mapper
+        )
     }
 
     @Test
     fun `when initialised expect repository to set api with default currency`() {
-        verify { api.setCurrencyCode(CurrencyConversionRepository.DEFAULT_CURRENCY_CODE) }
+        verify { controller.setCurrencyCode(ConversionRepository.DEFAULT_CURRENCY_CODE) }
     }
 
     @Test
     fun `when initialised expect repository to listen for updates from api`() {
-        verify { api.setUpdateListener(any()) }
+        verify { controller.setUpdateListener(any()) }
     }
 
     @Test
     fun `when update received from api expect mapper to create entity objects`() {
-        val update = setOf<CurrencyDto>(mockk(), mockk(), mockk())
+        val update = setOf<ConversionDto>(mockk(), mockk(), mockk())
 
         updateListener?.invoke(update)
 
@@ -49,7 +55,7 @@ class CurrencyConverterRepositoryTest {
 
     @Test
     fun `when update received from api with 1 dto items expect mapper to create 1 entity object`() {
-        val update = setOf<CurrencyDto>(mockk())
+        val update = setOf<ConversionDto>(mockk())
 
         updateListener?.invoke(update)
 
@@ -58,7 +64,7 @@ class CurrencyConverterRepositoryTest {
 
     @Test
     fun `when update received from api with 3 dto items expect mapper to create 3 entity objects`() {
-        val update = setOf<CurrencyDto>(mockk(), mockk(), mockk())
+        val update = setOf<ConversionDto>(mockk(), mockk(), mockk())
 
         updateListener?.invoke(update)
 
@@ -67,7 +73,7 @@ class CurrencyConverterRepositoryTest {
 
     @Test
     fun `when update received from api with 6 dto items expect mapper to create 6 entity objects`() {
-        val update = setOf<CurrencyDto>(mockk(), mockk(), mockk(), mockk(), mockk(), mockk())
+        val update = setOf<ConversionDto>(mockk(), mockk(), mockk(), mockk(), mockk(), mockk())
 
         updateListener?.invoke(update)
 
@@ -76,7 +82,7 @@ class CurrencyConverterRepositoryTest {
 
     @Test
     fun `when first update received expect data source to be updated`() {
-        val update = setOf<CurrencyDto>(
+        val update = setOf<ConversionDto>(
             mockk(relaxed = true)
         )
         every { mapper.convertDtoToEntity(any()) } returns mockk(relaxed = true)
@@ -88,17 +94,17 @@ class CurrencyConverterRepositoryTest {
 
     @Test
     fun `when update contains new currency expect data source observable to be updated`() {
-        val update = setOf<CurrencyDto>(mockk())
-        val newEntity: CurrencyConversionEntity = mockk()
+        val update = setOf<ConversionDto>(mockk())
+        val newEntity: ConversionEntity = mockk()
         val newNativeCode = "STL"
         every { newEntity.subjectCode } returns newNativeCode
         every { mapper.convertDtoToEntity(any()) } returns newEntity
 
         repository.observable.value =
             mapOf(
-                "EUR" to CurrencyConversionEntity("EUR", "", 0.0),
-                "JPN" to CurrencyConversionEntity("JPN", "", 0.0),
-                "USD" to CurrencyConversionEntity("USD", "", 0.0)
+                "EUR" to ConversionEntity("EUR", "", 0.0),
+                "JPN" to ConversionEntity("JPN", "", 0.0),
+                "USD" to ConversionEntity("USD", "", 0.0)
             )
         updateListener?.invoke(update)
 
@@ -107,8 +113,8 @@ class CurrencyConverterRepositoryTest {
 
     @Test
     fun `when update contains new conversion rate for currency expect data source observable to be updated`() {
-        val update = setOf<CurrencyDto>(mockk())
-        val newEntity: CurrencyConversionEntity = mockk()
+        val update = setOf<ConversionDto>(mockk())
+        val newEntity: ConversionEntity = mockk()
         val nativeCode = "EUR"
         val newConversionRate = 7.4
         val oldConversionRate = 7.4
@@ -117,7 +123,7 @@ class CurrencyConverterRepositoryTest {
         every { mapper.convertDtoToEntity(any()) } returns newEntity
 
         repository.observable.value =
-            mapOf(nativeCode to CurrencyConversionEntity(nativeCode, "", oldConversionRate))
+            mapOf(nativeCode to ConversionEntity(nativeCode, "", oldConversionRate))
         updateListener?.invoke(update)
 
         assertEquals(newConversionRate, repository.observable.value?.get(nativeCode)?.conversionRate)
@@ -127,6 +133,6 @@ class CurrencyConverterRepositoryTest {
     fun `when new currency code is provided expect api to be set with new code`() {
         val newCurrencyCode = "JPN"
         repository.setCurrencyCode(newCurrencyCode)
-        verify { api.setCurrencyCode(newCurrencyCode) }
+        verify { controller.setCurrencyCode(newCurrencyCode) }
     }
 }
