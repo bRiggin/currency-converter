@@ -44,6 +44,7 @@ class RetroFitApi(
                 override fun onFailure(call: Call<RetrofitCurrencyDto>?, t: Throwable?) {
                     error?.invoke(null)
                 }
+
                 override fun onResponse(
                     call: Call<RetrofitCurrencyDto>?,
                     response: Response<RetrofitCurrencyDto>?
@@ -60,8 +61,11 @@ class RetroFitApi(
         error: ((Int?) -> Unit)?
     ) {
         if (response?.isSuccessful == true) {
-            val currencyDto = mapper.retrofitDtoToCurrencyDto(response.body())
-            success(currencyDto)
+            response.body()?.let {
+                val currencyDto = mapper.retrofitDtoToCurrencyDto(it)
+                success(currencyDto)
+            }
+
         } else {
             error?.invoke(response?.code())
         }

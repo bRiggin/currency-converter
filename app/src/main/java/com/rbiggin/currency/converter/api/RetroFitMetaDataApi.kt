@@ -27,7 +27,7 @@ class RetroFitMetaDataApi(
                     response: Response<Set<RetrofitMetaDataNetworkDto>>?
                 ) {
                     if (response?.isSuccessful == true) {
-                        success(currencyCode, response.body())
+                        response.body()?.let { success(currencyCode, it) }
                     }
                 }
             })
