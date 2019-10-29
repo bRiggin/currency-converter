@@ -42,6 +42,13 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/currencyValueEditText"/>
 
+    <androidx.constraintlayout.widget.Group
+            android:id="@+id/editTextGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:constraint_referenced_ids="currencyValueEditText"/>
+
     <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/currencyValueEditText"
             android:layout_width="wrap_content"
@@ -54,6 +61,28 @@
             android:layout_margin="8dp"
             android:ellipsize="end"
             android:imeOptions="actionDone"
+            tools:text="122456"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <androidx.constraintlayout.widget.Group
+            android:id="@+id/textViewGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:constraint_referenced_ids="currencyValueTextView"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/currencyValueTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:maxLines="1"
+            android:maxWidth="128dp"
+            android:textSize="20sp"
+            android:layout_margin="8dp"
+            android:ellipsize="end"
             tools:text="122456"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

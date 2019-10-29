@@ -32,9 +32,15 @@ class CurrencyAdapter(
         with(holder) {
             setLiveData(list[position])
             view.setOnClickListener {
+                holder.copyValueToEditText()
                 listener.onItemClicked(adapterPosition)
             }
         }
+    }
+
+    override fun onViewRecycled(holder: CurrencyViewHolder) {
+        super.onViewRecycled(holder)
+        holder.onRecycled()
     }
 
     class CurrencyViewHolder(
@@ -56,18 +62,29 @@ class CurrencyAdapter(
         }
 
         fun setLiveData(data: LiveData<CurrencyModel>) {
-            liveData?.removeObserver(observer)
+            resetLiveData()
             liveData = data
             data.observe(lifeCycleOwner, observer)
         }
 
+        fun onRecycled() {
+            resetLiveData()
+        }
+
+        fun copyValueToEditText() {
+            view.currencyValueEditText.setText(view.currencyValueTextView.text.toString())
+        }
+
         private fun setAsTopView(isTop: Boolean) {
-            with(view.currencyValueEditText) {
-                isEnabled = isTop
+            with(view) {
                 if (isTop) {
-                    addTextChangedListener(textWatcher)
+                    editTextGroup.visibility = View.VISIBLE
+                    currencyValueEditText.addTextChangedListener(textWatcher)
+                    textViewGroup.visibility = View.GONE
                 } else {
-                    removeTextChangedListener(textWatcher)
+                    textViewGroup.visibility = View.VISIBLE
+                    currencyValueEditText.removeTextChangedListener(textWatcher)
+                    editTextGroup.visibility = View.GONE
                 }
             }
         }
@@ -81,14 +98,9 @@ class CurrencyAdapter(
         }
 
         private fun setValue(newValue: Long, isTop: Boolean) {
-            with(view.currencyValueEditText) {
-                when {
-                    isTop && !hasFocus() -> {
-                        textWatcher.programmaticChangeExpected = true
-                        setText(newValue.toString())
-                    }
-                    !isTop -> setText(newValue.toString())
-                }
+            view.currencyValueTextView.text = newValue.toString()
+            if (isTop && view.currencyValueEditText.text.isNullOrBlank()){
+                copyValueToEditText()
             }
         }
 
@@ -103,14 +115,14 @@ class CurrencyAdapter(
             }
         }
 
-        inner class GenericTextWatcher : TextWatcher {
-            var programmaticChangeExpected = false
+        private fun resetLiveData() {
+            liveData?.removeObserver(observer)
+            liveData = null
+        }
 
+        inner class GenericTextWatcher : TextWatcher {
             override fun afterTextChanged(editable: Editable?) {
-                if (view.currencyValueEditText.isEnabled && !programmaticChangeExpected) {
-                    programmaticChangeExpected = false
-                    listener.onNewInputValue(editable?.toString()?.toLongOrNull() ?: 0)
-                }
+                editable?.toString()?.toLongOrNull()?.let { listener.onNewInputValue(it) }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
