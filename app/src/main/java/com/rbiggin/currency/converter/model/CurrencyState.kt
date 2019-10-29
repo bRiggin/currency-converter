@@ -6,5 +6,5 @@ data class CurrencyState(
     val currencyName: String? = null,
     val flagAssetUrl: String? = null
 ) {
-    fun subjectCurrencyToTarget(subjectValue: Double): Double = subjectValue / conversionRate
+    fun subjectCurrencyToTarget(subjectValue: Long): Long = (subjectValue / conversionRate).toLong()
 }

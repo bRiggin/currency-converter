@@ -10,6 +10,6 @@
             android:id="@+id/currencyFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:name="com.rbiggin.currency.converter.CurrencyFragment"/>
+            android:name="com.rbiggin.currency.converter.view.CurrencyFragment"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

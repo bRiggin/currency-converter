@@ -10,23 +10,23 @@ import com.rbiggin.currency.converter.utils.TypedObserver
 
 class CurrencyInteractor(
     private val metaDataDataSource: MetaDataDataSource,
-    conversionDataSource: CurrencyConversionDataSource
+    private val conversionDataSource: CurrencyConversionDataSource
 ) : CurrencyUseCase {
 
     override val currencyStates: TypedObservable<Map<String, CurrencyState>> = TypedObservable()
 
-    private val currentState: Map<String, CurrencyState>?
-        get() = currencyStates.value
+    private val metaDataState: Map<String, CurrencyMetaDataEntity>?
+        get() = metaDataDataSource.observable.value
 
     private var conversionObserver = object : TypedObserver<Map<String, CurrencyConversionEntity>> {
         override fun onUpdate(value: Map<String, CurrencyConversionEntity>) {
-            updateStateFromConversionsUpdate(value)
+            updateCurrencyStates(value)
         }
     }
 
     private var metaDataObserver = object : TypedObserver<Map<String, CurrencyMetaDataEntity>> {
         override fun onUpdate(value: Map<String, CurrencyMetaDataEntity>) {
-            updateStateFromMetaDataUpdate(value)
+            updateCurrencyStates(conversionDataSource.observable.value)
         }
     }
 
@@ -35,77 +35,29 @@ class CurrencyInteractor(
         metaDataDataSource.observable.addTypedObserver(metaDataObserver)
     }
 
-    private fun updateStateFromMetaDataUpdate(entities: Map<String, CurrencyMetaDataEntity>) {
-        val state = currentState?.toMutableMap() ?: mutableMapOf()
-
-        val updateRequired = evaluateNewMetaDataEntitiesForUpdate(entities, state)
-
-        if (updateRequired) updateState(state)
+    override fun setCurrencyCode(code: String) {
+        conversionDataSource.setCurrencyCode(code)
     }
 
-    private fun evaluateNewMetaDataEntitiesForUpdate(
-        entities: Map<String, CurrencyMetaDataEntity>,
-        state: MutableMap<String, CurrencyState>
-    ): Boolean {
-        var updateRequired = false
-        entities.entries.forEach { updateEntry ->
-            state[updateEntry.key]?.let { currentState ->
+    private fun updateCurrencyStates(entities: Map<String, CurrencyConversionEntity>?) {
+        entities?.let {
+            metaDataDataSource.getMetaData(entities.mapKeysToSet())
 
-                val flagUrl = if (currentState.flagAssetUrl != updateEntry.value.flagUrl) {
-                    updateRequired = true
-                    updateEntry.value.flagUrl
-                } else {
-                    currentState.flagAssetUrl
-                }
+            val newMap = currencyStates.value?.toMutableMap() ?: mutableMapOf()
 
-                val currencyCode = if (currentState.currencyName != updateEntry.value.currencyName) {
-                    updateRequired = true
-                    updateEntry.value.currencyCode
-                } else {
-                    currentState.currencyCode
-                }
-
-                state[updateEntry.key] = currentState.copy(currencyName = currencyCode, flagAssetUrl = flagUrl)
+            entities.entries.forEach { entity ->
+                val newEntity = CurrencyState(
+                    entity.key,
+                    entity.value.conversionRate,
+                    metaDataState?.get(entity.key)?.currencyName,
+                    metaDataState?.get(entity.key)?.flagUrl
+                )
+                newMap[entity.key] = newEntity
             }
+
+            if (newMap.isNotEmpty())
+                currencyStates.value = newMap
         }
-        return updateRequired
-    }
-
-    private fun updateStateFromConversionsUpdate(entities: Map<String, CurrencyConversionEntity>) {
-        val state = currentState?.toMutableMap() ?: mutableMapOf()
-
-        metaDataDataSource.getMetaData(entities.mapKeysToSet())
-
-        val updateRequired = evaluateNewConversionEntitiesForUpdate(entities, state)
-
-        if (updateRequired) updateState(state)
-    }
-
-    private fun evaluateNewConversionEntitiesForUpdate(
-        entities: Map<String, CurrencyConversionEntity>,
-        state: MutableMap<String, CurrencyState>
-    ): Boolean {
-        var updateRequired = false
-        entities.entries.forEach { updateEntry ->
-            val currentEntry = state[updateEntry.key]
-
-            if (currentEntry != null) {
-                if (currentEntry.conversionRate != updateEntry.value.conversionRate) {
-                    state[updateEntry.key] =
-                        currentEntry.copy(conversionRate = updateEntry.value.conversionRate)
-                    updateRequired = true
-                }
-            } else {
-                state[updateEntry.key] =
-                    CurrencyState(updateEntry.value.subjectCode, updateEntry.value.conversionRate)
-                updateRequired = true
-            }
-        }
-        return updateRequired
-    }
-
-    private fun updateState(state: Map<String, CurrencyState>) {
-        currencyStates.value = state
     }
 
     private fun Map<String, *>.mapKeysToSet(): Set<String> {

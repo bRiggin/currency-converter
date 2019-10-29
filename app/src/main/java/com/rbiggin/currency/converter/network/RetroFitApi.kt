@@ -12,7 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 class RetroFitApi(
     private val mapper: RetroFitMapper = RetroFitMapper,
     private val retroFitBuilder: Retrofit.Builder = Retrofit.Builder()
-): CurrencyNetworkApi {
+) : CurrencyNetworkApi {
 
     private var client: RetrofitCurrencyClient? = null
     private var currencyCode: String? = null
@@ -60,7 +60,7 @@ class RetroFitApi(
         error: ((Int?) -> Unit)?
     ) {
         if (response?.isSuccessful == true) {
-           val currencyDto =  mapper.retrofitDtoToCurrencyDto(response.body())
+            val currencyDto = mapper.retrofitDtoToCurrencyDto(response.body())
             success(currencyDto)
         } else {
             error?.invoke(response?.code())
