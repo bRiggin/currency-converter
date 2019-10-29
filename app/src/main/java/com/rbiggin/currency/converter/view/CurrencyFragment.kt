@@ -24,8 +24,6 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
 
         with(recyclerView) {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-            setHasFixedSize(true)
-            setItemViewCacheSize(40)
         }
 
         viewModel.listUpdates.observe(viewLifecycleOwner, Observer {
@@ -63,8 +61,7 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
         viewModel.setInputValue(input)
     }
 
-    override fun onItemClicked(index: Int, currentValue: Long?, currencyCode: String?) {
-        if (currencyCode != null && currentValue != null)
-            viewModel.onItemTouched(index, currentValue, currencyCode)
+    override fun onItemClicked(index: Int) {
+        if (!recyclerView.isAnimating) viewModel.onItemTouched(index)
     }
 }

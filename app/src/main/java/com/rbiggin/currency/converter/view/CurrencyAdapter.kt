@@ -32,11 +32,7 @@ class CurrencyAdapter(
         with(holder) {
             setLiveData(list[position])
             view.setOnClickListener {
-                listener.onItemClicked(
-                    adapterPosition,
-                    list[position].value?.value,
-                    list[position].value?.currencyCode
-                )
+                listener.onItemClicked(adapterPosition)
             }
         }
     }
@@ -47,17 +43,23 @@ class CurrencyAdapter(
         private val lifeCycleOwner: LifecycleOwner,
         private val listener: CurrencyAdapterListener
     ) : RecyclerView.ViewHolder(view) {
-        private val textWatcher = GenericTextWatcher()
 
-        fun setLiveData(data: LiveData<CurrencyModel>) {
-            data.removeObservers(lifeCycleOwner)
-            data.observe(lifeCycleOwner, Observer {
+        private val textWatcher = GenericTextWatcher()
+        private var liveData: LiveData<CurrencyModel>? = null
+
+        private val observer: Observer<CurrencyModel> = Observer {
                 setAsTopView(it.isTop)
                 setCurrencyCode(it.currencyCode)
                 setValue(it.value, it.isTop)
                 setCurrencyName(it.currencyName)
                 setFlag(it.flagAssetUrl, activity)
-            })
+        }
+
+        fun setLiveData(data: LiveData<CurrencyModel>) {
+            liveData?.removeObserver(observer)
+            liveData = data
+            data.removeObservers(lifeCycleOwner)
+            data.observe(lifeCycleOwner, observer)
         }
 
         private fun setAsTopView(isTop: Boolean) {

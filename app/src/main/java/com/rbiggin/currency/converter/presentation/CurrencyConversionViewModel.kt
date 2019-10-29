@@ -26,7 +26,6 @@ class CurrencyConversionViewModel(
 
     private val observer = object : TypedObserver<Map<String, CurrencyState>> {
         override fun onUpdate(value: Map<String, CurrencyState>) {
-            Log.i("----FROM OBSERVER----", "Calling update list. Value: $inputValue")
             updateStateList(value)
         }
     }
@@ -35,17 +34,18 @@ class CurrencyConversionViewModel(
         currencyUseCase.currencyStates.addTypedObserver(observer)
     }
 
-    fun onItemTouched(index: Int, value: Long, currencyCode: String) {
-        if (index != 0 && index in 0 until conversionList.size) {
-            disabledTopItemInput()
-            val element = mutableList[index]
-            with(mutableList) {
-                remove(element)
-                add(0, element)
+    fun onItemTouched(index: Int) {
+        mutableList.getOrNull(index)?.let { tappedElement ->
+            tappedElement.value?.let { currentState ->
+                disabledTopItemInput()
+                with(mutableList) {
+                    remove(tappedElement)
+                    add(0, tappedElement)
+                }
+                currencyUseCase.setCurrencyCode(currentState.currencyCode)
+                setInputValue(currentState.value, true)
+                mutableUpdate.value = UpdateType.NewTopItem(index)
             }
-            currencyUseCase.setCurrencyCode(currencyCode)
-            setInputValue(value, true)
-            mutableUpdate.value = UpdateType.NewTopItem(index)
         }
     }
 
