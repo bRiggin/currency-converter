@@ -18,6 +18,35 @@ The application uses a MVVM architecture and tries to focus on clean architectur
 
 ![alt text](./images/ArchitectureDiagram.svg "ArchitectureDiagram")
 
+## Responsibilities
+
+### CurrencyFragment & CurrencyAdapter
+Aware of Android framework and responsible for presenting view model state to the user.
+
+### CurrencyViewModel
+Reacting to user input and to translate state from use case into an appropriate form for visual display.
+
+### CurrencyUseCase
+To control both meta data and conversion data sources and to combine their states to describe the current state of known currencies.
+
+### ConversionDataSource
+Store and distribute the current state of the known conversion rates.
+
+### ConversionController
+Aware of specific API and aims to control network calls and to automatically control refresh rate. Also hands results to data source.
+
+### ConversionNetworkApi
+Tied to specific implementation of networking and to perform network calls.
+
+### MetaDataDataSource
+Store and distribute the current state of the known meat data for requested currency codes.
+
+### MetaDataController
+Aware of specific API and aims to control network calls and provide results back to data source. Also responsible for evaluating countries by population size and identifying the most appropriate flag URLs.
+
+### MetaDataNetworkApi
+Tied to specific implementation of networking and to perform network calls.
+
 ## Model Flow
 
 Each application layer passes the most appropriate data entities across each architecture boundary. While this results in a large number of similar data classes, it aids decoupling each layer from one another. Mappers are used to perform the transformations from one data entity to another. The diagram below describes the data model flows within the application.
