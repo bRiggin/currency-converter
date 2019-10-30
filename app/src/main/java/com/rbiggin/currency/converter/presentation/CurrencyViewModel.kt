@@ -1,6 +1,5 @@
 package com.rbiggin.currency.converter.presentation
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -35,25 +34,28 @@ class CurrencyViewModel(
     }
 
     fun onItemTouched(index: Int) {
-        mutableList.getOrNull(index)?.let { tappedElement ->
-            tappedElement.value?.let { currentState ->
-                disabledTopItemInput()
-                with(mutableList) {
-                    remove(tappedElement)
-                    add(0, tappedElement)
-                }
-                currencyUseCase.setCurrencyCode(currentState.currencyCode)
-                setInputValue(currentState.value, true)
-                mutableUpdate.value = UpdateType.NewTopItem(index)
+        if (index != 0) {
+            mutableList.getOrNull(index)?.let { tappedElement ->
+                handleTappedElement(tappedElement, index)
             }
         }
     }
 
     fun setInputValue(newValue: Long, isNewTopItem: Boolean = false) {
         inputValue = newValue
-        if (!isNewTopItem) {
-            Log.i("--FROM INPUT AMOUNT--", "Calling update list. Value: $inputValue")
-            updateStateList(currencyUseCase.currencyStates.value)
+        if (!isNewTopItem) updateStateList(currencyUseCase.currencyStates.value)
+    }
+
+    private fun handleTappedElement(tappedElement: MutableLiveData<CurrencyModel>, index: Int) {
+        tappedElement.value?.let { currentState ->
+            disabledTopItemInput()
+            with(mutableList) {
+                remove(tappedElement)
+                add(0, tappedElement)
+            }
+            currencyUseCase.setCurrencyCode(currentState.currencyCode)
+            setInputValue(currentState.value, true)
+            mutableUpdate.value = UpdateType.NewTopItem(index)
         }
     }
 
@@ -66,16 +68,30 @@ class CurrencyViewModel(
 
     private fun updateStateList(map: Map<String, CurrencyState>?) {
         val isFirstTime = mutableList.isEmpty()
+        var numberOfNewItems = 0
 
         map?.entries?.forEach { entry ->
             mutableList.find { it.value?.currencyCode == entry.key }?.let {
                 updateListItem(it, entry.value)
             } ?: run {
                 addNewListItem(entry.value)
+                numberOfNewItems++
             }
         }
 
-        if (isFirstTime) mutableUpdate.postValue(UpdateType.InitialUpdate)
+        publishUpdate(isFirstTime, numberOfNewItems)
+    }
+
+    private fun publishUpdate(isFirstTime: Boolean, numberOfNewItems: Int) {
+        with(mutableUpdate) {
+            if (isFirstTime) {
+                postValue(UpdateType.InitialUpdate)
+            } else if (numberOfNewItems > 0) {
+                postValue(
+                    UpdateType.NewItems(mutableList.size - numberOfNewItems, numberOfNewItems)
+                )
+            }
+        }
     }
 
     private fun updateListItem(
@@ -103,16 +119,9 @@ class CurrencyViewModel(
 
     sealed class UpdateType {
         object InitialUpdate : UpdateType()
-        object Pop : UpdateType()
-        data class ItemsUpdate(
-            val indexesChanged: List<Int>,
-            val newItems: NewItems? = null
-        ) : UpdateType()
-
+        data class NewItems(val insertIndex: Int, val numberOfItems: Int) : UpdateType()
         data class NewTopItem(val fromIndex: Int) : UpdateType()
     }
-
-    data class NewItems(val insertIndex: Int, val numberOfItems: Int)
 
     companion object {
         private const val EUROPEAN_DEFAULT_AMOUNT = 1000L

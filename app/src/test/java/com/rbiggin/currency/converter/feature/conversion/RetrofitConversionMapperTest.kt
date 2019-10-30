@@ -1,4 +1,4 @@
-package com.rbiggin.currency.converter.network
+package com.rbiggin.currency.converter.feature.conversion
 
 import com.rbiggin.currency.converter.feature.conversion.network.RetrofitConversionMapper
 import com.rbiggin.currency.converter.feature.conversion.network.RetrofitConversionDto

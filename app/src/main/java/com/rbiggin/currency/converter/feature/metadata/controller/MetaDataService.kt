@@ -4,15 +4,14 @@ import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataController
 import com.rbiggin.currency.converter.feature.metadata.network.RetrofitMetaDataDto
 import com.rbiggin.currency.converter.model.MetaDataDto
 
-class MetaDataService(
-    private val networkApi: MetaDataNetworkApi
-) : MetaDataController {
+class MetaDataService(private val networkApi: MetaDataNetworkApi) : MetaDataController {
 
     private var resultPending = false
 
-    private var networkResponseListener: (String, Set<RetrofitMetaDataDto>) -> Unit = { code, dtos ->
-        handleNetworkResponse(code, dtos)
-    }
+    private var networkResponseListener: (String, Set<RetrofitMetaDataDto>) -> Unit =
+        { code, dtos ->
+            handleNetworkResponse(code, dtos)
+        }
 
     private var networkErrorListener: (String, Int?) -> Unit = { currencyCode, error ->
         handleNetworkError(currencyCode, error)

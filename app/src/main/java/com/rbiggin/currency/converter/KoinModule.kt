@@ -11,7 +11,7 @@ import com.rbiggin.currency.converter.feature.metadata.controller.MetaDataNetwor
 import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataController
 import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataDataSource
 import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataRepository
-import com.rbiggin.currency.converter.feature.metadata.network.RetrofitMetaDataApi
+import com.rbiggin.currency.converter.feature.metadata.network.RetrofitMetaDataService
 import com.rbiggin.currency.converter.presentation.CurrencyViewModel
 import com.rbiggin.currency.converter.usecase.CurrencyInteractor
 import com.rbiggin.currency.converter.usecase.CurrencyUseCase
@@ -50,5 +50,5 @@ val koinModule = module {
 
     factory<ConversionNetworkApi> { RetrofitConversionService() }
 
-    factory<MetaDataNetworkApi> { RetrofitMetaDataApi() }
+    factory<MetaDataNetworkApi> { RetrofitMetaDataService() }
 }

@@ -1,9 +1,5 @@
-package com.rbiggin.currency.converter.datasource
+package com.rbiggin.currency.converter.feature.metadata.entity
 
-import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataController
-import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataMapper
-import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataDataSource
-import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataRepository
 import com.rbiggin.currency.converter.model.MetaDataDto
 import io.mockk.every
 import io.mockk.mockk

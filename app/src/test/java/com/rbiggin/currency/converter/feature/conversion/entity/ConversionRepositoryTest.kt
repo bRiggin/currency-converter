@@ -1,9 +1,5 @@
-package com.rbiggin.currency.converter.datasource
+package com.rbiggin.currency.converter.feature.conversion.entity
 
-import com.rbiggin.currency.converter.feature.conversion.entity.ConversionController
-import com.rbiggin.currency.converter.feature.conversion.entity.ConversionDataSource
-import com.rbiggin.currency.converter.feature.conversion.entity.ConversionMapper
-import com.rbiggin.currency.converter.feature.conversion.entity.ConversionRepository
 import com.rbiggin.currency.converter.model.ConversionDto
 import com.rbiggin.currency.converter.model.ConversionEntity
 import io.mockk.every
@@ -13,7 +9,7 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
-class CurrencyConverterRepositoryTest {
+class ConversionRepositoryTest {
 
     private val controller: ConversionController = mockk(relaxed = true)
     private val mapper: ConversionMapper = mockk(relaxed = true)

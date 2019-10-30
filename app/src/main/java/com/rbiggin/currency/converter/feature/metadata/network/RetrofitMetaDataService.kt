@@ -8,7 +8,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RetrofitMetaDataApi(
+class RetrofitMetaDataService(
     private val retroFitBuilder: Retrofit.Builder = Retrofit.Builder()
 ) : MetaDataNetworkApi {
 
@@ -20,17 +20,29 @@ class RetrofitMetaDataApi(
         createNewClient().getMetaData(currencyCode).apply {
             enqueue(object : Callback<Set<RetrofitMetaDataDto>> {
                 override fun onFailure(call: Call<Set<RetrofitMetaDataDto>>?, t: Throwable?) {
+                    error?.invoke(currencyCode, null)
                 }
 
                 override fun onResponse(
                     call: Call<Set<RetrofitMetaDataDto>>?,
                     response: Response<Set<RetrofitMetaDataDto>>?
                 ) {
-                    if (response?.isSuccessful == true) {
-                        response.body()?.let { success(currencyCode, it) }
-                    }
+                    handleNetworkResponse(response, success, currencyCode, error)
                 }
             })
+        }
+    }
+
+    private fun handleNetworkResponse(
+        response: Response<Set<RetrofitMetaDataDto>>?,
+        success: (String, Set<RetrofitMetaDataDto>) -> Unit,
+        currencyCode: String,
+        error: ((String, Int?) -> Unit)?
+    ) {
+        if (response?.isSuccessful == true) {
+            response.body()?.let { success(currencyCode, it) }
+        } else {
+            error?.invoke(currencyCode, response?.code())
         }
     }
 

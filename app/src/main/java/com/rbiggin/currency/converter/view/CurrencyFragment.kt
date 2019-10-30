@@ -19,10 +19,13 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        recyclerView.adapter =
-            CurrencyAdapter(activity as Activity, viewModel.conversionList, viewLifecycleOwner, this)
-
         with(recyclerView) {
+            adapter = CurrencyAdapter(
+                activity as Activity,
+                viewModel.conversionList,
+                viewLifecycleOwner,
+                this@CurrencyFragment
+            )
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         }
 
@@ -33,26 +36,17 @@ class CurrencyFragment : Fragment(R.layout.fragment_currency), CurrencyAdapterLi
 
     private fun updateList(update: CurrencyViewModel.UpdateType) {
         when (update) {
-            is CurrencyViewModel.UpdateType.ItemsUpdate -> {
-                update.newItems?.let {
-                    recyclerView.adapter?.notifyItemRangeInserted(it.insertIndex, it.numberOfItems)
-                }
-//                update.indexesChanged.forEach {
-//                    recyclerView.adapter?.notifyItemChanged(it)
-//                }
-                if (update.indexesChanged.isNotEmpty()) {
-                    recyclerView.post { recyclerView.adapter?.notifyDataSetChanged() }
-                }
-            }
+            is CurrencyViewModel.UpdateType.NewItems ->
+                recyclerView.adapter?.notifyItemRangeInserted(
+                    update.insertIndex,
+                    update.numberOfItems
+                )
             is CurrencyViewModel.UpdateType.NewTopItem ->
                 recyclerView.apply {
                     adapter?.notifyItemMoved(update.fromIndex, 0)
                     scrollToPosition(0)
                 }
             CurrencyViewModel.UpdateType.InitialUpdate ->
-                recyclerView.adapter =
-                    CurrencyAdapter(activity as Activity, viewModel.conversionList, viewLifecycleOwner, this)
-            CurrencyViewModel.UpdateType.Pop ->
                 recyclerView.adapter?.notifyDataSetChanged()
         }
     }
