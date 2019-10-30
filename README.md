@@ -10,7 +10,7 @@ When another currency is selected, the Revolut API is then used to obtain the co
 
 ## Known Issues
 
-* Currently the Euro is displayed with a German flag, this is because Germany is the country with the largest population that uses the Euro currency.
+* The resouce for the EU flag has been included within the project and the CurrencyApadter does a horrible string comparision with the provided URL and uses the EU flag resouce if the URL matches the REST countires API German flag URL. This URL is provided to the CurrencyAdapater because Germany is the country with the largest population that uses the Euro currency. 
 
 ## Architecture
 
