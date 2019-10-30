@@ -1,13 +1,12 @@
-package com.rbiggin.currency.converter.feature.conversion
+package com.rbiggin.currency.converter.feature.conversion.entity
 
-import com.rbiggin.currency.converter.feature.conversion.entity.ConversionMapper
 import com.rbiggin.currency.converter.model.ConversionDto
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class CurrencyConversionMapperTest {
+class ConversionMapperTest {
 
     private val dtoObject: ConversionDto = mockk(relaxed = true)
 

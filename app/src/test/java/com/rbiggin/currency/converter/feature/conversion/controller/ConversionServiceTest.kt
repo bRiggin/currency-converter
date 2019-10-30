@@ -1,9 +1,7 @@
-package com.rbiggin.currency.converter.feature.conversion
+package com.rbiggin.currency.converter.feature.conversion.controller
 
 import android.os.Handler
 import com.rbiggin.currency.converter.feature.conversion.entity.ConversionController
-import com.rbiggin.currency.converter.feature.conversion.controller.ConversionService
-import com.rbiggin.currency.converter.feature.conversion.controller.ConversionNetworkApi
 import com.rbiggin.currency.converter.model.ConversionDto
 import io.mockk.*
 import org.junit.Before

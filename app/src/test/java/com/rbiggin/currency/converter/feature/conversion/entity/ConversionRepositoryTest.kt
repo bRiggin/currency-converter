@@ -1,9 +1,5 @@
-package com.rbiggin.currency.converter.feature.conversion
+package com.rbiggin.currency.converter.feature.conversion.entity
 
-import com.rbiggin.currency.converter.feature.conversion.entity.ConversionController
-import com.rbiggin.currency.converter.feature.conversion.entity.ConversionDataSource
-import com.rbiggin.currency.converter.feature.conversion.entity.ConversionMapper
-import com.rbiggin.currency.converter.feature.conversion.entity.ConversionRepository
 import com.rbiggin.currency.converter.model.ConversionDto
 import com.rbiggin.currency.converter.model.ConversionEntity
 import io.mockk.every
