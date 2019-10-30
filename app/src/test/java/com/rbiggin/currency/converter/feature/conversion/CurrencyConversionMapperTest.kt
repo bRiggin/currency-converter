@@ -1,4 +1,4 @@
-package com.rbiggin.currency.converter.datasource
+package com.rbiggin.currency.converter.feature.conversion
 
 import com.rbiggin.currency.converter.feature.conversion.entity.ConversionMapper
 import com.rbiggin.currency.converter.model.ConversionDto

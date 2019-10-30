@@ -1,4 +1,4 @@
-package com.rbiggin.currency.converter.api
+package com.rbiggin.currency.converter.feature.conversion
 
 import android.os.Handler
 import com.rbiggin.currency.converter.feature.conversion.entity.ConversionController

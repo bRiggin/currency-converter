@@ -34,16 +34,9 @@ class CurrencyViewModel(
     }
 
     fun onItemTouched(index: Int) {
-        mutableList.getOrNull(index)?.let { tappedElement ->
-            tappedElement.value?.let { currentState ->
-                disabledTopItemInput()
-                with(mutableList) {
-                    remove(tappedElement)
-                    add(0, tappedElement)
-                }
-                currencyUseCase.setCurrencyCode(currentState.currencyCode)
-                setInputValue(currentState.value, true)
-                mutableUpdate.value = UpdateType.NewTopItem(index)
+        if (index != 0) {
+            mutableList.getOrNull(index)?.let { tappedElement ->
+                handleTappedElement(tappedElement, index)
             }
         }
     }
@@ -51,6 +44,19 @@ class CurrencyViewModel(
     fun setInputValue(newValue: Long, isNewTopItem: Boolean = false) {
         inputValue = newValue
         if (!isNewTopItem) updateStateList(currencyUseCase.currencyStates.value)
+    }
+
+    private fun handleTappedElement(tappedElement: MutableLiveData<CurrencyModel>, index: Int) {
+        tappedElement.value?.let { currentState ->
+            disabledTopItemInput()
+            with(mutableList) {
+                remove(tappedElement)
+                add(0, tappedElement)
+            }
+            currencyUseCase.setCurrencyCode(currentState.currencyCode)
+            setInputValue(currentState.value, true)
+            mutableUpdate.value = UpdateType.NewTopItem(index)
+        }
     }
 
     private fun disabledTopItemInput() {

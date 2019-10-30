@@ -1,4 +1,4 @@
-package com.rbiggin.currency.converter.datasource
+package com.rbiggin.currency.converter.feature.metadata
 
 import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataController
 import com.rbiggin.currency.converter.feature.metadata.entity.MetaDataMapper
