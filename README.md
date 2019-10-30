@@ -2,9 +2,9 @@
 
 ## Description
 
-Small project that uses the specified API to obtain the currency conversion rates for a specific currency to a variety of other currencies. The required UI dictates that these conversion rates are applied to an input value and displayed in a list as numerical values along with the associated currency codes, currency names and national flags.
+This small project uses the specified Revolut API to obtain currency conversion rates from a specific currency to a variety of others. The required UI dictates that these conversion rates are applied to an input value and displayed in a list as numerical values along with the associated currency codes, currency names and national flags.
  
-The application therefore hits the Revolut API to obtain the conversion rates for the Euro. Due to the fact that this API only provides the currency codes and conversion rates for the other currencies, the application then uses the RESTCountries API to obtain a list of countries where each currency is recognised. This list is evaluated to identify the country with the largest population and the flag asset for this country is then loaded into list along with the currencies name.
+The application therefore hits the Revolut API to obtain the conversion rates for the Euro. Due to the fact that this API only provides the currency codes and conversion rates, the application then uses the RESTCountries API to obtain a list of countries where each currency is recognised. This list is evaluated to identify the country with the largest population and the flag asset for this country is then loaded into list along with the currencies name.
 
 When another currency is selected, the Revolut API is then used to obtain the conversion rates for that currency.
 
@@ -24,28 +24,28 @@ The application uses a MVVM architecture and tries to focus on clean architectur
 Aware of Android framework and responsible for presenting view model state to the user.
 
 ### CurrencyViewModel
-Reacting to user input and to translate state from use case into an appropriate form for visual display.
+Reacting to user inputs and to translate state from use case into an appropriate form for visual display.
 
 ### CurrencyUseCase
-To control both meta data and conversion data sources and to combine their states to describe the current state of known currencies.
+To control both meta data and conversion data sources and to combine their states to describe the associtated information of known currencies.
 
 ### ConversionDataSource
 Store and distribute the current state of the known conversion rates.
 
 ### ConversionController
-Aware of specific API and aims to control network calls and to automatically control refresh rate. Also handles results to data source.
+Aware of Revolut API and aims to control network calls and to automatically control refresh rate. Also supplies results to data source.
 
 ### ConversionNetworkApi
-Tied to specific implementation of networking and to perform network calls.
+Tied to specific implementation of networking and performs network calls.
 
 ### MetaDataDataSource
 Store and distribute the current state of the known meat data for requested currency codes.
 
 ### MetaDataController
-Aware of specific API and aims to control network calls and provide results back to data source. Also responsible for evaluating countries by population size and identifying the most appropriate flag URLs.
+Aware of RESTCounties API and aims to control network calls and provide results back to data source. Also responsible for evaluating countries by population size and identifying the most appropriate flag URLs.
 
 ### MetaDataNetworkApi
-Tied to specific implementation of networking and to perform network calls.
+Tied to specific implementation of networking and performs network calls.
 
 ## Model Flow
 
@@ -63,10 +63,10 @@ The following items describes limitations of the application that could be impro
 
 * The application performs no data connection checking
 
-* The application performs no specific threading but rather relies on the behaviour of LiveData and Retrofit libraries.
+* The application performs no specific threading but rather relies on the behaviour of LiveData and Retrofit libraries
 
 * The application performs no persistance
 
 * The application does not include a bespoke app icon
 
-* The application obtains the meta data for each currency uses a queue, the introduction of a factory class would allow for this to be done concurrently.
+* The application obtains the meta data for each currency uses a queue, the introduction of a factory class would allow for this to be done concurrently
