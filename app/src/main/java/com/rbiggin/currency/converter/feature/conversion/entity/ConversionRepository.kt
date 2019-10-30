@@ -35,10 +35,7 @@ class ConversionRepository(
         val newState = currentState?.toMutableMap() ?: mutableMapOf()
 
         update.forEach { dto ->
-            val newEntity =
-                ConversionMapper.convertDtoToEntity(
-                    dto
-                )
+            val newEntity = mapper.convertDtoToEntity(dto)
             if (currentState?.containsKey(newEntity.subjectCode) == true) {
                 if (currentState?.get(newEntity.subjectCode) != newEntity) {
                     newState[newEntity.subjectCode] = newEntity
