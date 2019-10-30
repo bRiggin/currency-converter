@@ -105,11 +105,17 @@ class CurrencyAdapter(
         }
 
         private fun setFlag(url: String?, activity: Activity) {
+
             url?.let {
-                SvgLoader.pluck()
-                    .with(activity)
-                    .setPlaceHolder(R.drawable.ic_flag_grey_24dp, R.drawable.ic_flag_grey_24dp)
-                    .load(it, view.currencyFlag)
+                //Horrible hack to work around RESTCountries API limitation, see Read Me for more detail
+                if (it == "https://restcountries.eu/data/deu.svg"){
+                    view.currencyFlag.setImageResource(R.drawable.img_flag_eu)
+                } else {
+                    SvgLoader.pluck()
+                        .with(activity)
+                        .setPlaceHolder(R.drawable.ic_flag_grey_24dp, R.drawable.ic_flag_grey_24dp)
+                        .load(it, view.currencyFlag)
+                }
             } ?: run {
                 view.currencyFlag.setImageResource(R.drawable.ic_flag_grey_24dp)
             }
@@ -122,11 +128,21 @@ class CurrencyAdapter(
 
         inner class GenericTextWatcher : TextWatcher {
             override fun afterTextChanged(editable: Editable?) {
-                editable?.toString()?.toLongOrNull()?.let { listener.onNewInputValue(it) }
+                editable?.let { handleTextChange(it) }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            private fun handleTextChange(editable: Editable) {
+                if (editable.isEmpty()) {
+                    listener.onNewInputValue(0)
+                } else {
+                    editable.toString().toLongOrNull()?.let {
+                        listener.onNewInputValue(it)
+                    }
+                }
+            }
         }
     }
 
