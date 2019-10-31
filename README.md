@@ -53,9 +53,11 @@ Each application layer passes the most appropriate data entities across each arc
 
 ![alt text](./images/ModelFlow.svg "Model Flow Diagram")
 
-## Assumption
+## Assumptions
 
 * Specification states that the app should refresh every second. The implementation does not simply send a request every second but rather waits until a (un)successful response, delays a second and then repeats. This avoids sending multiple requests when it may not be necessary i.e. when there is no data connection.
+
+* Demo video dipicts inputs numbers without decimal values. This project has replicated this behaviour.
 
 ## Limitations
 
